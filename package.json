@@ -15,7 +15,11 @@
     "commands": [{
       "command": "env-vault.helloWorld",
       "title": "Hello World"
-    }]
+    },{
+      "command":"env-vault.getEnv",
+      "title":"fetch the env"
+    }
+  ]
   },
   "scripts": {
     "lint": "eslint .",
