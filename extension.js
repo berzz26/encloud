@@ -24,7 +24,6 @@ function activate(context) {
 	const getEnvFiles = () => {
 		const files = fs.readdirSync(workspaceFolder); // List all files in the workspace
 
-		// Filter out the files that start with `.env`
 		const envFiles = files.filter(file => file.startsWith('.env'));
 
 		return envFiles;
@@ -57,7 +56,6 @@ function activate(context) {
 
 		if (!selectedFile) return;
 
-		// Proceed with the selected .env file
 		vscode.window.showInformationMessage(`Selected file: ${selectedFile}`);
 		console.log('Selected file:', selectedFile);
 
@@ -65,15 +63,11 @@ function activate(context) {
 	};
 
 
-	const disposable = vscode.commands.registerCommand('env-vault.helloWorld', function () {
-		// The code you place here will be executed every time your command is executed
-		console.log('Congratulations, your extension "env-vault" is now active!');
-
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from env_vault!');
-	});
+	
 	const get = vscode.commands.registerCommand('env-vault.getEnv', function () {
 		// The code you place here will be executed every time your command is executed
+		
+		
 		selectEnvFile()
 
 
@@ -84,10 +78,9 @@ function activate(context) {
 
 	}
 
-	context.subscriptions.push(disposable, get);
+	context.subscriptions.push(get);
 }
 
-// This method is called when your extension is deactivated
 function deactivate() { }
 
 module.exports = {
