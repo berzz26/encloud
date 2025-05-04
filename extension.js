@@ -112,6 +112,8 @@ function activate(context) {
 			if (!syncOpt) return;
 			if (syncOpt == '[Select all .env files in workspace]') {
 				readMultipleEnv(envFiles)
+			}else{
+				readEnv(syncOpt)
 			}
 
 
