@@ -30,12 +30,11 @@ function activate(context) {
 		return decrypted;
 	};
 
-	// --- Save to Global Encrypted Storage ---
+	
 	const saveEnvToStorage = async (filename, content) => {
 		const encrypted = encrypt(content);
 		await context.globalState.update(`env-${filename}`, encrypted);
 
-		// Track the filename in a list
 		let tracked = context.globalState.get('env-files') || [];
 		if (!tracked.includes(filename)) {
 			tracked.push(filename);
@@ -63,7 +62,7 @@ function activate(context) {
 	};
 
 
-	// --- Detect .env Files ---
+	
 	const getEnvFiles = () => {
 		const files = fs.readdirSync(workspaceFolder);
 		return files.filter(file => file.startsWith('.env'));
@@ -82,12 +81,12 @@ function activate(context) {
 		});
 	};
 
-	// --- Sync All Detected ---
+	
 	const readMultipleEnv = (fileList) => {
 		fileList.forEach(file => readEnv(file));
 	};
 
-	// --- UI Command for User to Choose ---
+	
 	const selectEnvFile = async () => {
 		const envFiles = getEnvFiles();
 
