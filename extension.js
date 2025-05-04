@@ -1,90 +1,132 @@
-
 const vscode = require('vscode');
-const fs = require('fs')
-const os = require('os')
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 
-
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+const SECRET_KEY = crypto.createHash('sha256').update('my-super-secret').digest(); // 32-byte key
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-
 	const workspaceFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-	
-	
-	const getEnvFiles = () => {
-		const files = fs.readdirSync(workspaceFolder); // List all files in the workspace
 
-		const envFiles = files.filter(file => file.startsWith('.env'));
-
-		return envFiles;
+	const encrypt = (text) => {
+		const iv = crypto.randomBytes(16);
+		const cipher = crypto.createCipheriv('aes-256-cbc', SECRET_KEY, iv);
+		let encrypted = cipher.update(text, 'utf8', 'hex');
+		encrypted += cipher.final('hex');
+		return iv.toString('hex') + ':' + encrypted;
 	};
+
+	const decrypt = (data) => {
+		const [ivHex, encryptedText] = data.split(':');
+		const iv = Buffer.from(ivHex, 'hex');
+		const decipher = crypto.createDecipheriv('aes-256-cbc', SECRET_KEY, iv);
+		let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
+		decrypted += decipher.final('utf8');
+		return decrypted;
+	};
+
+	// --- Save to Global Encrypted Storage ---
+	const saveEnvToStorage = async (filename, content) => {
+		const encrypted = encrypt(content);
+		await context.globalState.update(`env-${filename}`, encrypted);
+
+		// Track the filename in a list
+		let tracked = context.globalState.get('env-files') || [];
+		if (!tracked.includes(filename)) {
+			tracked.push(filename);
+			await context.globalState.update('env-files', tracked);
+		}
+
+		vscode.window.showInformationMessage(`Synced ${filename} securely`);
+	};
+
+	const loadStoredEnvs = () => {
+		const tracked = context.globalState.get('env-files') || [];
+		const storedEnvs = {};
+
+		for (const filename of tracked) {
+			const encrypted = context.globalState.get(`env-${filename}`);
+			if (!encrypted) continue;
+			try {
+				storedEnvs[filename] = decrypt(encrypted);
+			} catch (e) {
+				vscode.window.showErrorMessage(`Failed to decrypt ${filename}`);
+			}
+		}
+
+		return storedEnvs;
+	};
+
+
+	// --- Detect .env Files ---
+	const getEnvFiles = () => {
+		const files = fs.readdirSync(workspaceFolder);
+		return files.filter(file => file.startsWith('.env'));
+	};
+
+
 	const readEnv = (filename) => {
-		fs.readFile(`${workspaceFolder}/${filename}`, 'utf8', (err, data) => {
+		const fullPath = path.join(workspaceFolder, filename);
+		fs.readFile(fullPath, 'utf8', async (err, data) => {
 			if (err) {
-				vscode.window.showInformationMessage(`Error reading ${filename}: ${err.message}`);
+				vscode.window.showErrorMessage(`Error reading ${filename}: ${err.message}`);
 				return;
 			}
-			vscode.window.showInformationMessage(`${filename} contents:\n${data.substring(0, 200)}...`);
+			// vscode.window.showInformationMessage(`Synced ${filename}: ${data.slice(0, 100)}...`);
+			await saveEnvToStorage(filename, data);
 		});
 	};
-	
+
+	// --- Sync All Detected ---
 	const readMultipleEnv = (fileList) => {
 		fileList.forEach(file => readEnv(file));
 	};
-	
+
+	// --- UI Command for User to Choose ---
 	const selectEnvFile = async () => {
 		const envFiles = getEnvFiles();
-	
+
 		if (envFiles.length === 0) {
 			vscode.window.showInformationMessage('No .env files found in the workspace');
 			return;
 		}
-	
-		const options = ['[Read All Detected .env Files]', ...envFiles];
-	
+
+		const options = ['[Restore env files]', '[Sync All Detected .env Files]', ...envFiles];
 		const selectedFile = await vscode.window.showQuickPick(options, {
-			placeHolder: 'Select an .env file to work with or read all'
+			placeHolder: 'Select an .env file to sync with or restore'
 		});
-	
+
 		if (!selectedFile) return;
-	
-		if (selectedFile === '[Read All Detected .env Files]') {
-			vscode.window.showInformationMessage(' Reading all .env files...');
+
+		if (selectedFile === '[Sync All Detected .env Files]') {
 			readMultipleEnv(envFiles);
+		} else if (selectedFile === '[Restore env files]') {
+			const stored = loadStoredEnvs();
+
+			if (Object.keys(stored).length === 0) {
+				vscode.window.showInformationMessage('No stored env files found in global storage.');
+				return;
+			}
+
+			for (const [filename, content] of Object.entries(stored)) {
+				const filePath = path.join(workspaceFolder, filename);
+				fs.writeFileSync(filePath, content, 'utf8');
+				vscode.window.showInformationMessage(`Restored ${filename} to workspace.`);
+			}
 		} else {
-			vscode.window.showInformationMessage(`Selected file: ${selectedFile}`);
 			readEnv(selectedFile);
 		}
 	};
-	
 
-
-	
 	const get = vscode.commands.registerCommand('env-vault.getEnv', function () {
-		// The code you place here will be executed every time your command is executed
-		
-		
-		selectEnvFile()
-
-
+		vscode.window.showInformationMessage('Current OS: ' + os.version());
+		selectEnvFile();
 	});
-
-	const updateEnv = () => {
-
-
-	}
 
 	context.subscriptions.push(get);
 }
@@ -94,4 +136,4 @@ function deactivate() { }
 module.exports = {
 	activate,
 	deactivate
-}
+};
