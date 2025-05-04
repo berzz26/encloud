@@ -100,19 +100,32 @@ function activate(context) {
 
 	const selectEnvFile = async () => {
 		const envFiles = getEnvFiles();
-
-		const options = [
-			'[Restore .env files]',
-			'[Sync .env Files]',
-			'[Clear Synced .env Files]'
-		];
-
+		const stored = loadStoredEnvs();
+	
+		if (envFiles.length === 0 && Object.keys(stored).length === 0) {
+			vscode.window.showErrorMessage('No .env files found in workspace or global storage.');
+			vscode.window.showWarningMessage('Please sync or add a .env file to the workspace');
+			return;
+		}
+	
+		const options = [];
+	
+		if (envFiles.length > 0) {
+			options.push('[Sync .env Files]');
+		}
+	
+		if (Object.keys(stored).length > 0) {
+			options.push('[Restore .env files]');
+		}
+	
+		options.push('[Clear Synced .env Files]');
+	
 		const selectedFile = await vscode.window.showQuickPick(options, {
 			placeHolder: 'Select action'
 		});
-
+	
 		if (!selectedFile) return;
-
+	
 		if (selectedFile === '[Sync .env Files]') {
 			const selectEnvOpt = ['[Select all .env files in workspace]', ...envFiles];
 			const syncOpt = await vscode.window.showQuickPick(selectEnvOpt, {
@@ -125,13 +138,6 @@ function activate(context) {
 				readEnv(syncOpt);
 			}
 		} else if (selectedFile === '[Restore .env files]') {
-			const stored = loadStoredEnvs();
-
-			if (Object.keys(stored).length === 0) {
-				vscode.window.showInformationMessage('No stored env files found in global storage.');
-				return;
-			}
-
 			for (const [filename, content] of Object.entries(stored)) {
 				const filePath = path.join(workspaceFolder, filename);
 				fs.writeFileSync(filePath, content, 'utf8');
@@ -141,7 +147,7 @@ function activate(context) {
 			const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
 				placeHolder: 'Are you sure you want to clear all synced .env files?'
 			});
-
+	
 			if (confirm === 'Yes') {
 				const tracked = context.globalState.get('env-files') || [];
 				for (const filename of tracked) {
@@ -153,9 +159,10 @@ function activate(context) {
 			}
 		}
 	};
+	
 
 	const get = vscode.commands.registerCommand('env-vault.getEnv', function () {
-		vscode.window.showInformationMessage('OS: ' + os.platform() + ' | Version: ' + os.version());
+		vscode.window.showInformationMessage('Current OS: ' + os.platform() + ' | Version: ' + os.version());
 		selectEnvFile();
 	});
 

@@ -2,7 +2,7 @@
   "name": "env-vault",
   "displayName": "env_vault",
   "description": "keep track of your env files, in your local env. despite switching os",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "publisher":"AumTamboli",
   "engines": {
     "vscode": "^1.99.0"
