@@ -96,16 +96,26 @@ function activate(context) {
 			return;
 		}
 
-		const options = ['[Restore env files]', '[Sync All Detected .env Files]', ...envFiles];
+		const options = ['[Restore .env files]', '[Sync .env Files]'];
 		const selectedFile = await vscode.window.showQuickPick(options, {
-			placeHolder: 'Select an .env file to sync with or restore'
+			placeHolder: 'Select action'
 		});
 
 		if (!selectedFile) return;
 
-		if (selectedFile === '[Sync All Detected .env Files]') {
-			readMultipleEnv(envFiles);
-		} else if (selectedFile === '[Restore env files]') {
+		if (selectedFile === '[Sync .env Files]') {
+			const selectEnvOpt = ['[Select all .env files in workspace]', ...envFiles]
+
+			const syncOpt = await vscode.window.showQuickPick(selectEnvOpt, {
+				placeHolder: 'Select which env file to sync'
+			})
+			if (!syncOpt) return;
+			if (syncOpt == '[Select all .env files in workspace]') {
+				readMultipleEnv(envFiles)
+			}
+
+
+		} else if (selectedFile === '[Restore .env files]') {
 			const stored = loadStoredEnvs();
 
 			if (Object.keys(stored).length === 0) {
