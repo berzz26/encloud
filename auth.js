@@ -1,14 +1,17 @@
-
+require('dotenv').config();
 const vscode = require('vscode');
 const { createClient } = require('@supabase/supabase-js');
 
+// Check for required env variables
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+	vscode.window.showErrorMessage('Supabase credentials missing from environment variables.');
+	throw new Error('Missing Supabase credentials.');
+}
 
-
-
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-console.log(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-
-
+const supabase = createClient(
+	process.env.SUPABASE_URL,
+	process.env.SUPABASE_ANON_KEY
+);
 let currentSession = null;
 
 async function isLoggedIn() {
@@ -20,8 +23,7 @@ async function login() {
 	const { data, error } = await supabase.auth.signInWithOAuth({
 		provider: 'github',
 		options: {
-			// You can skip this if you're using Supabase's default callback URL
-			redirectTo: process.env.SUPABASE_CALLBACK_URL,
+			redirectTo: process.env.SUPABASE_CALLBACK_URL
 		}
 	});
 
@@ -30,31 +32,29 @@ async function login() {
 		return null;
 	}
 
-	// Open browser for OAuth flow
 	vscode.env.openExternal(vscode.Uri.parse(data.url));
-
-	//  Poll for session
 	vscode.window.setStatusBarMessage('Waiting for GitHub login...');
+
 	for (let i = 0; i < 30; i++) {
 		await new Promise(res => setTimeout(res, 1000));
 		const { data } = await supabase.auth.getSession();
-		if (data.session) {
+		if (data?.session) {
 			currentSession = data.session;
 			vscode.window.setStatusBarMessage('');
-			vscode.window.showInformationMessage(` Logged in as ${data.session.user.email}`);
+			vscode.window.showInformationMessage(`Logged in as ${data.session.user.email}`);
 			return data.session;
 		}
 	}
 
 	vscode.window.setStatusBarMessage('');
-	vscode.window.showErrorMessage(' Login timed out.');
+	vscode.window.showErrorMessage('Login timed out.');
 	return null;
 }
 
 async function logout() {
 	await supabase.auth.signOut();
 	currentSession = null;
-	vscode.window.showInformationMessage(' Logged out successfully.');
+	vscode.window.showInformationMessage('Logged out successfully.');
 }
 
 async function getCurrentUser() {

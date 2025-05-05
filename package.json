@@ -13,10 +13,32 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
+    "authentication": [
+      {
+        "id": "supabase-github",
+        "label": "Supabase (GitHub)"
+      }
+    ],
     "commands": [
       {
-        "command": "env-vault.getEnv",
-        "title": "handle .env files"
+        "command": "supabase-github.logout",
+        "title": "Supabase: Logout"
+      },
+      {
+        "command": "envsync.login",
+        "title": "Login to Supabase"
+      },
+      {
+        "command": "envsync.sync",
+        "title": "Sync .env Files"
+      },
+      {
+        "command": "envsync.restore",
+        "title": "Restore .env Files"
+      },
+      {
+        "command": "envsync.clear",
+        "title": "Clear .env Data"
       }
     ]
   },
@@ -38,6 +60,8 @@
     "url": "https://github.com/berzz26/env-vault"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.49.4"
+    "@supabase/supabase-js": "^2.49.4",
+    "dotenv": "^16.5.0",
+    "open": "^10.1.2"
   }
 }

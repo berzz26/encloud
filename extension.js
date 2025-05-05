@@ -1,177 +1,129 @@
 const vscode = require('vscode');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
+const { login, isLoggedIn, getCurrentUser, supabase } = require('./auth');
 
-const getSecretKey = (context) => {
-	let key = context.globalState.get('env-vault-secret-key');
-	if (!key) {
-		key = crypto.randomBytes(32).toString('hex');
-		context.globalState.update('env-vault-secret-key', key);
+function encrypt(text, key) {
+	const iv = crypto.randomBytes(16);
+	const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+	const encrypted = Buffer.concat([cipher.update(text, 'utf8'), cipher.final()]);
+	return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(payload, key) {
+	const [ivHex, encryptedHex] = payload.split(':');
+	const iv = Buffer.from(ivHex, 'hex');
+	const encryptedText = Buffer.from(encryptedHex, 'hex');
+	const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+	const decrypted = Buffer.concat([decipher.update(encryptedText), decipher.final()]);
+	return decrypted.toString('utf8');
+}
+
+async function getOrCreateSecretKey(userId) {
+	const { data, error } = await supabase.from('users').select('secret_key').eq('user_id', userId).single();
+
+	if (data?.secret_key) {
+		return Buffer.from(data.secret_key, 'hex');
 	}
-	return Buffer.from(key, 'hex');
-};
 
-/**
- * @param {vscode.ExtensionContext} context
- */
-function activate(context) {
+	const newKey = crypto.randomBytes(32).toString('hex');
+	await supabase.from('users').upsert([{ user_id: userId, secret_key: newKey }]);
+	return Buffer.from(newKey, 'hex');
+}
 
-	const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-	if (!workspaceFolder) {
-		vscode.window.showWarningMessage('No workspace folder is open.');
+async function syncEnvFiles() {
+	const user = await getCurrentUser();
+	if (!user) {
+		vscode.window.showErrorMessage('Not logged in. Please run "Login" first.');
 		return;
 	}
 
-	const SECRET_KEY = getSecretKey(context);
+	const secretKey = await getOrCreateSecretKey(user.id);
+	const workspaceFolders = vscode.workspace.workspaceFolders;
 
-	const encrypt = (text) => {
-		const iv = crypto.randomBytes(16);
-		const cipher = crypto.createCipheriv('aes-256-cbc', SECRET_KEY, iv);
-		let encrypted = cipher.update(text, 'utf8', 'hex');
-		encrypted += cipher.final('hex');
-		return iv.toString('hex') + ':' + encrypted;
-	};
+	if (!workspaceFolders) {
+		vscode.window.showErrorMessage('No workspace is open.');
+		return;
+	}
 
-	const decrypt = (data) => {
-		const [ivHex, encryptedText] = data.split(':');
-		const iv = Buffer.from(ivHex, 'hex');
-		const decipher = crypto.createDecipheriv('aes-256-cbc', SECRET_KEY, iv);
-		let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
-		decrypted += decipher.final('utf8');
-		return decrypted;
-	};
+	const folderPath = workspaceFolders[0].uri.fsPath;
+	const files = fs.readdirSync(folderPath).filter(f => f.endsWith('.env'));
 
-	const saveEnvToStorage = async (filename, content) => {
-		const encrypted = encrypt(content);
-		await context.globalState.update(`env-${filename}`, encrypted);
+	if (files.length === 0) {
+		vscode.window.showInformationMessage('No .env files found to sync.');
+		return;
+	}
 
-		let tracked = context.globalState.get('env-files') || [];
-		if (!tracked.includes(filename)) {
-			tracked.push(filename);
-			await context.globalState.update('env-files', tracked);
-		}
+	for (const filename of files) {
+		const fullPath = path.join(folderPath, filename);
+		const content = fs.readFileSync(fullPath, 'utf8');
+		const encryptedContent = encrypt(content, secretKey);
 
-		vscode.window.showInformationMessage(`Synced ${filename} securely`);
-	};
-
-	const loadStoredEnvs = () => {
-		const tracked = context.globalState.get('env-files') || [];
-		const storedEnvs = {};
-
-		for (const filename of tracked) {
-			const encrypted = context.globalState.get(`env-${filename}`);
-			if (!encrypted) continue;
-			try {
-				storedEnvs[filename] = decrypt(encrypted);
-			} catch (e) {
-				vscode.window.showErrorMessage(`Failed to decrypt ${filename}`);
+		await supabase.from('envs').upsert([
+			{
+				user_id: user.id,
+				filename,
+				content: encryptedContent
 			}
-		}
+		]);
+	}
 
-		return storedEnvs;
-	};
-
-	const getEnvFiles = async () => {
-		try {
-			const pattern = new vscode.RelativePattern(workspaceFolder, '**/.env*');
-			const files = await vscode.workspace.findFiles(pattern);
-
-			// Extract relative file paths from Uri objects
-			return files.map(file => path.relative(workspaceFolder, file.fsPath));
-		} catch (err) {
-			vscode.window.showErrorMessage('Error reading workspace folder');
-			return [];
-		}
-	};
-
-	const readEnv = (filename) => {
-		const fullPath = path.join(workspaceFolder, filename);
-		fs.readFile(fullPath, 'utf8', async (err, data) => {
-			if (err) {
-				vscode.window.showErrorMessage(`Error reading ${filename}: ${err.message}`);
-				return;
-			}
-			await saveEnvToStorage(filename, data);
-		});
-	};
-	const readMultipleEnv = (fileList) => {
-		fileList.forEach(file => readEnv(file));
-	};
-
-	const selectEnvFile = async () => {
-		const envFiles = await getEnvFiles();
-		const stored = loadStoredEnvs();
-
-		if (envFiles.length === 0 && Object.keys(stored).length === 0) {
-			vscode.window.showErrorMessage('No .env files found in workspace or global storage.');
-			vscode.window.showWarningMessage('Please sync or add a .env file to the workspace');
-			return;
-		}
-
-		const options = [];
-
-		if (envFiles.length > 0) {
-			options.push('[Sync .env Files]');
-		}
-
-		if (Object.keys(stored).length > 0) {
-			options.push('[Restore .env files]');
-		}
-
-		options.push('[Clear Synced .env Files]');
-
-		const selectedFile = await vscode.window.showQuickPick(options, {
-			placeHolder: 'Select action'
-		});
-
-		if (!selectedFile) return;
-
-		if (selectedFile === '[Sync .env Files]') {
-			const selectEnvOpt = ['[Select all .env files in workspace]', ...envFiles];
-			const syncOpt = await vscode.window.showQuickPick(selectEnvOpt, {
-				placeHolder: 'Select which env file to sync'
-			});
-			if (!syncOpt) return;
-			if (syncOpt === '[Select all .env files in workspace]') {
-				readMultipleEnv(envFiles);
-			} else {
-				readEnv(syncOpt);
-			}
-		} else if (selectedFile === '[Restore .env files]') {
-			for (const [filename, content] of Object.entries(stored)) {
-				const filePath = path.join(workspaceFolder, filename);
-				fs.writeFileSync(filePath, content, 'utf8');
-				vscode.window.showInformationMessage(`Restored ${filename} to workspace.`);
-			}
-		} else if (selectedFile === '[Clear Synced .env Files]') {
-			const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
-				placeHolder: 'Are you sure you want to clear all synced .env files?'
-			});
-
-			if (confirm === 'Yes') {
-				const tracked = context.globalState.get('env-files') || [];
-				for (const filename of tracked) {
-					await context.globalState.update(`env-${filename}`, undefined);
-				}
-				await context.globalState.update('env-files', undefined);
-				await context.globalState.update('env-vault-secret-key', undefined);
-				vscode.window.showInformationMessage('Cleared all synced .env files and encryption key.');
-			}
-		}
-	};
-
-
-	const get = vscode.commands.registerCommand('env-vault.getEnv', function () {
-		vscode.window.showInformationMessage('Current OS: ' + os.platform() + ' | Version: ' + os.version());
-		selectEnvFile();
-	});
-
-	context.subscriptions.push(get);
+	vscode.window.showInformationMessage('✅ .env files synced to Supabase.');
 }
 
-function deactivate() { }
+async function restoreEnvFiles() {
+	const user = await getCurrentUser();
+	if (!user) {
+		vscode.window.showErrorMessage('Not logged in.');
+		return;
+	}
+
+	const secretKey = await getOrCreateSecretKey(user.id);
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+
+	if (!workspaceFolders) {
+		vscode.window.showErrorMessage('No workspace is open.');
+		return;
+	}
+
+	const folderPath = workspaceFolders[0].uri.fsPath;
+
+	const { data, error } = await supabase.from('envs').select('*').eq('user_id', user.id);
+	if (!data || data.length === 0) {
+		vscode.window.showInformationMessage('No .env files found in Supabase.');
+		return;
+	}
+
+	for (const row of data) {
+		const decrypted = decrypt(row.content, secretKey);
+		fs.writeFileSync(path.join(folderPath, row.filename), decrypted, 'utf8');
+	}
+
+	vscode.window.showInformationMessage('✅ .env files restored.');
+}
+
+async function clearEnvData() {
+	const user = await getCurrentUser();
+	if (!user) {
+		vscode.window.showErrorMessage('Not logged in.');
+		return;
+	}
+
+	await supabase.from('envs').delete().eq('user_id', user.id);
+	vscode.window.showInformationMessage('🧹 .env data cleared from Supabase.');
+}
+
+async function activate(context) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('envsync.login', login),
+		vscode.commands.registerCommand('envsync.sync', syncEnvFiles),
+		vscode.commands.registerCommand('envsync.restore', restoreEnvFiles),
+		vscode.commands.registerCommand('envsync.clear', clearEnvData)
+	);
+}
+
+function deactivate() {}
 
 module.exports = {
 	activate,
