@@ -73,10 +73,13 @@ function activate(context) {
 		return storedEnvs;
 	};
 
-	const getEnvFiles = () => {
+	const getEnvFiles = async () => {
 		try {
-			const files = fs.readdirSync(workspaceFolder);
-			return files.filter(file => file.startsWith('.env'));
+			const pattern = new vscode.RelativePattern(workspaceFolder, '**/.env*');
+			const files = await vscode.workspace.findFiles(pattern);
+
+			// Extract relative file paths from Uri objects
+			return files.map(file => path.relative(workspaceFolder, file.fsPath));
 		} catch (err) {
 			vscode.window.showErrorMessage('Error reading workspace folder');
 			return [];
@@ -93,39 +96,38 @@ function activate(context) {
 			await saveEnvToStorage(filename, data);
 		});
 	};
-
 	const readMultipleEnv = (fileList) => {
 		fileList.forEach(file => readEnv(file));
 	};
 
 	const selectEnvFile = async () => {
-		const envFiles = getEnvFiles();
+		const envFiles = await getEnvFiles();
 		const stored = loadStoredEnvs();
-	
+
 		if (envFiles.length === 0 && Object.keys(stored).length === 0) {
 			vscode.window.showErrorMessage('No .env files found in workspace or global storage.');
 			vscode.window.showWarningMessage('Please sync or add a .env file to the workspace');
 			return;
 		}
-	
+
 		const options = [];
-	
+
 		if (envFiles.length > 0) {
 			options.push('[Sync .env Files]');
 		}
-	
+
 		if (Object.keys(stored).length > 0) {
 			options.push('[Restore .env files]');
 		}
-	
+
 		options.push('[Clear Synced .env Files]');
-	
+
 		const selectedFile = await vscode.window.showQuickPick(options, {
 			placeHolder: 'Select action'
 		});
-	
+
 		if (!selectedFile) return;
-	
+
 		if (selectedFile === '[Sync .env Files]') {
 			const selectEnvOpt = ['[Select all .env files in workspace]', ...envFiles];
 			const syncOpt = await vscode.window.showQuickPick(selectEnvOpt, {
@@ -147,7 +149,7 @@ function activate(context) {
 			const confirm = await vscode.window.showQuickPick(['Yes', 'No'], {
 				placeHolder: 'Are you sure you want to clear all synced .env files?'
 			});
-	
+
 			if (confirm === 'Yes') {
 				const tracked = context.globalState.get('env-files') || [];
 				for (const filename of tracked) {
@@ -159,7 +161,7 @@ function activate(context) {
 			}
 		}
 	};
-	
+
 
 	const get = vscode.commands.registerCommand('env-vault.getEnv', function () {
 		vscode.window.showInformationMessage('Current OS: ' + os.platform() + ' | Version: ' + os.version());
