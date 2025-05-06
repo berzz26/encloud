@@ -58,15 +58,25 @@ jobs:
         run: pnpm run package
         
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            *.vsix
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+          
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./env-vault-${{ github.ref_name }}.vsix
+          asset_name: env-vault-${{ github.ref_name }}.vsix
+          asset_content_type: application/octet-stream
           
       # Marketplace publishing disabled for now
       # - name: Publish to VS Code Marketplace
