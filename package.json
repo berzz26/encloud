@@ -2,7 +2,7 @@
   "name": "env-vault",
   "displayName": "env_vault",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",

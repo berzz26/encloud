@@ -4,6 +4,14 @@ All notable changes to the "env-vault" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.3.1] - 2025-05-06
+
+### Fixed
+
+- Fixed GitHub Actions workflow for publishing to VS Code Marketplace
+- Improved error handling for Supabase database operations
+- Updated documentation for Supabase table setup
+
 ## [0.3.0] - 2025-05-06
 
 ### Fixed
