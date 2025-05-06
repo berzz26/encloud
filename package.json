@@ -2,7 +2,7 @@
   "name": "dot-vault",
   "displayName": "DotVault",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",
