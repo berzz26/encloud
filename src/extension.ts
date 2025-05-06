@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as auth from './auth';
-import { runSetupWizard } from './setupWizard';
+// import { runSetupWizard } from './setupWizard';
 import { 
   PasswordSetup, 
   EnvFileQuickPickItem, 
@@ -465,8 +465,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       })
     );
 
-    // Run setup wizard for first-time users
-    await runSetupWizard(context);
+    // Temporarily disabled for local testing
+    // await runSetupWizard(context);
   } catch (error) {
     vscode.window.showErrorMessage(`Extension activation failed: ${(error as Error).message}`);
   }

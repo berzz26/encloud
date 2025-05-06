@@ -4,6 +4,21 @@ All notable changes to the "dot-vault" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.0] - 2025-05-06
+
+### Changed
+
+- Renamed project from "Env Vault" to "DotVault" for better branding
+- Updated all references in code and documentation
+- Changed package name from "env-vault" to "dot-vault"
+- Updated GitHub repository references
+- Modified command categories from "EnvVault" to "DotVault"
+
+### Added
+
+- Added MIT LICENSE.md file
+
+
 ## [0.3.2] - 2025-05-06
 
 ### Fixed
