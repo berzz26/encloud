@@ -1,4 +1,4 @@
-# Development Guide for Env Vault
+# Development Guide for DotVault
 
 This project uses [pnpm](https://pnpm.io/) as its package manager for faster and more efficient dependency management. This guide will help you set up your development environment and understand the project workflow.
 
@@ -17,8 +17,8 @@ This project uses [pnpm](https://pnpm.io/) as its package manager for faster and
 
 2. Clone the repository:
    ```bash
-   git clone https://github.com/berzz26/env-vault.git
-   cd env-vault
+   git clone https://github.com/berzz26/dot-vault.git
+   cd dot-vault
    ```
 
 3. Install dependencies:
@@ -72,7 +72,7 @@ This will:
 
 3. Install the packaged extension
    ```bash
-   code --install-extension env-vault-[version].vsix
+   code --install-extension dot-vault-[version].vsix
    ```
    (Replace `[version]` with the current version number)
 
@@ -213,7 +213,7 @@ pnpm run package
 ## Project Structure
 
 ```
-env-vault/
+dot-vault/
 ├── .github/               # GitHub-specific files
 │   ├── workflows/         # GitHub Actions workflows
 │   └── ISSUE_TEMPLATE/    # Issue templates

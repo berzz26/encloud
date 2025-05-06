@@ -1,6 +1,6 @@
 {
-  "name": "env-vault",
-  "displayName": "env_vault",
+  "name": "dot-vault",
+  "displayName": "DotVault",
   "description": "keep track of your env files across multiple workspaces and different environments!",
   "version": "0.3.2",
   "publisher": "AumTamboli",
@@ -26,50 +26,50 @@
       {
         "command": "supabase-github.logout",
         "title": " Logout",
-        "category": "EnvVault"
+        "category": "DotVault"
       },
       {
         "command": "envsync.login",
         "title": " Login",
-        "category": "EnvVault"
+        "category": "DotVault"
       },
       {
         "command": "envsync.sync",
         "title": " Sync .env Files",
-        "category": "EnvVault"
+        "category": "DotVault"
       },
       {
         "command": "envsync.restore",
         "title": " Restore .env Files",
-        "category": "EnvVault"
+        "category": "DotVault"
       },
       {
         "command": "envsync.clear",
         "title": " Clear .env Data",
-        "category": "EnvVault"
+        "category": "DotVault"
       }
     ],
     "menus": {
       "commandPalette": [
         {
           "command": "envsync.login",
-          "group": "EnvVault"
+          "group": "DotVault"
         },
         {
           "command": "supabase-github.logout",
-          "group": "EnvVault"
+          "group": "DotVault"
         },
         {
           "command": "envsync.sync",
-          "group": "EnvVault"
+          "group": "DotVault"
         },
         {
           "command": "envsync.restore",
-          "group": "EnvVault"
+          "group": "DotVault"
         },
         {
           "command": "envsync.clear",
-          "group": "EnvVault"
+          "group": "DotVault"
         }
       ]
     }
@@ -125,7 +125,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/berzz26/env-vault"
+    "url": "https://github.com/berzz26/dot-vault"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
