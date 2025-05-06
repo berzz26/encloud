@@ -60,8 +60,9 @@ jobs:
           prerelease: false
           
       # Marketplace publishing disabled for now
-      # - name: Publish to VS Code Marketplace
-      #   if: success()
-      #   run: pnpm exec vsce publish -p ${{ secrets.VSCE_TOKEN }}
-      #   env:
-      #     VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+      - name: Publish to VS Code Marketplace
+        if: success()
+        run: pnpm exec vsce publish -p ${{ secrets.VSCE_TOKEN }}
+        env:
+            : ${{ secrets.VSCE_TOKEN }}
+            
