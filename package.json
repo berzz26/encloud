@@ -12,11 +12,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:envsync.login",
-    "onCommand:envsync.sync",
-    "onCommand:envsync.restore",
-    "onCommand:envsync.clear",
-    "onCommand:supabase-github.logout",
     "onUriHandler"
   ],
   "main": "./dist/src/extension.js",
