@@ -6,11 +6,24 @@
 import * as vscode from 'vscode';
 import { createClient, SupabaseClient, Session, User } from '@supabase/supabase-js';
 import * as path from 'path';
+import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 import { AuthenticationError } from './types';
 
 // Load environment variables
-dotenv.config({ path: path.join(__dirname, '..', '.env') });
+// Try multiple possible locations for the .env file
+const possibleEnvPaths = [
+  path.join(__dirname, '..', '..', '.env'),  // For compiled code in dist/src
+  path.join(__dirname, '..', '.env'),        // Fallback
+  '.env'                                     // Direct reference to root
+];
+
+for (const envPath of possibleEnvPaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    break;
+  }
+}
 
 // Validate required environment variables
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
