@@ -43,5 +43,8 @@ jobs:
       - name: Build
         run: pnpm run build
         
+      - name: Install xvfb
+        run: sudo apt-get install -y xvfb
+        
       - name: Test
-        run: pnpm run test
+        run: xvfb-run -a pnpm run test
