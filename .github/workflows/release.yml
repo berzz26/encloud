@@ -86,6 +86,6 @@ jobs:
 
       - name: Publish to VS Code Marketplace
         if: success()
-        run: pnpm exec vsce publish -p ${{ secrets.VSCE_TOKEN }}
+        run: pnpm exec vsce publish --no-dependencies -p ${{ secrets.VSCE_TOKEN }}
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
