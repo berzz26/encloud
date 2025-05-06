@@ -68,14 +68,20 @@ jobs:
           draft: false
           prerelease: false
           
+      - name: Find VSIX file
+        id: find_vsix
+        run: |
+          echo "VSIX_PATH=$(find . -name "*.vsix" | head -n 1)" >> $GITHUB_OUTPUT
+          echo "VSIX_NAME=$(find . -name "*.vsix" | head -n 1 | xargs basename)" >> $GITHUB_OUTPUT
+          
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./env-vault-${{ github.ref_name }}.vsix
-          asset_name: env-vault-${{ github.ref_name }}.vsix
+          asset_path: ${{ steps.find_vsix.outputs.VSIX_PATH }}
+          asset_name: ${{ steps.find_vsix.outputs.VSIX_NAME }}
           asset_content_type: application/octet-stream
           
       # Marketplace publishing disabled for now
