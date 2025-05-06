@@ -2,24 +2,36 @@
 
 **Securely sync and restore `.env` files across your VS Code projects.**
 
-Env Vault allows developers to securely encrypt, store, and restore `.env` files using VS Code's global storage. Never worry about losing your local environment variables again.
+Env Vault allows developers to securely encrypt and store `.env` files in Supabase using password-based encryption. Perfect for managing environment variables across different machines and projects.
 
 ## Features
 
 - Detects `.env*` files in your workspace
-- Encrypts and saves them in global storage (using AES-256-CBC)
-- Restore `.env` files anytime on any project
-- Minimal UI through VS Code’s command palette
+- Password-based encryption (PBKDF2 + AES-256-CBC)
+- GitHub authentication for user management
+- Secure cloud storage with end-to-end encryption
+- Restore `.env` files on any device with your password
 
-##  How to Use
+## How to Use
 
-1. Open the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
-2. Search for and run: `Env Vault: Get Env`
-3. Choose from:
-   - `[Sync .env Files]` → Select and store your `.env` files securely
-   - `[Restore .env files]` → Restore your previously synced files into the current workspace
+1. Login with GitHub through the Command Palette (`Ctrl+Shift+P` or `Cmd+Shift+P`)
+2. Set up your encryption password (first time only)
+3. Choose from available commands:
+   - `EnvVault: Sync` → Select and encrypt `.env` files
+   - `EnvVault: Restore` → Decrypt and restore your files
+   - `EnvVault: Clear` → Remove stored `.env` files
 
 ## Security
 
-Your environment file content is encrypted with AES-256-CBC using a hashed secret key and stored in VS Code’s global storage. This ensures your data stays local and secure.
+- Password-based key derivation (PBKDF2 with 100,000 iterations)
+- AES-256-CBC encryption for file contents
+- Only salt and verification hash stored in database
+- Zero-knowledge design - server never sees your password or decrypted data
+- Each operation requires password verification
+
+## Important Notes
+
+- Keep your password safe - there's no recovery mechanism
+- Password required for both sync and restore operations
+- Works across different devices with the same password
 
