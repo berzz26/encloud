@@ -1,8 +1,8 @@
 {
   "name": "env-vault",
   "displayName": "env_vault",
-  "description": "keep track of your env files, in your local env. despite switching os",
-  "version": "0.1.1",
+  "description": "keep track of your env files across multiple workspaces and different environments!",
+  "version": "0.1.2",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0"
@@ -10,7 +10,14 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:envsync.login",
+    "onCommand:envsync.sync",
+    "onCommand:envsync.restore",
+    "onCommand:envsync.clear",
+    "onCommand:supabase-github.logout",
+    "onUriHandler"
+  ],
   "main": "./extension.js",
   "contributes": {
     "authentication": [
@@ -22,25 +29,54 @@
     "commands": [
       {
         "command": "supabase-github.logout",
-        "title": "Supabase: Logout"
+        "title": " Logout",
+        "category": "EnvVault"
       },
       {
         "command": "envsync.login",
-        "title": "Login to Supabase"
+        "title": " Login",
+        "category": "EnvVault"
       },
       {
         "command": "envsync.sync",
-        "title": "Sync .env Files"
+        "title": " Sync .env Files",
+        "category": "EnvVault"
       },
       {
         "command": "envsync.restore",
-        "title": "Restore .env Files"
+        "title": " Restore .env Files",
+        "category": "EnvVault"
       },
       {
         "command": "envsync.clear",
-        "title": "Clear .env Data"
+        "title": " Clear .env Data",
+        "category": "EnvVault"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "envsync.login",
+          "group": "EnvVault"
+        },
+        {
+          "command": "supabase-github.logout",
+          "group": "EnvVault"
+        },
+        {
+          "command": "envsync.sync",
+          "group": "EnvVault"
+        },
+        {
+          "command": "envsync.restore",
+          "group": "EnvVault"
+        },
+        {
+          "command": "envsync.clear",
+          "group": "EnvVault"
+        }
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint .",
