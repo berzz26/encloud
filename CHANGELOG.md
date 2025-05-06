@@ -4,6 +4,13 @@ All notable changes to the "env-vault" extension will be documented in this file
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.3.2] - 2025-05-06
+
+### Fixed
+
+- Fixed VS Code Marketplace publishing by adding --no-dependencies flag to vsce publish command
+- Resolved dependency issues in GitHub Actions workflow
+
 ## [0.3.1] - 2025-05-06
 
 ### Fixed
