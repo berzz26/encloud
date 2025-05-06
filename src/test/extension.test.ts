@@ -6,13 +6,13 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 // Use Mocha directly instead of VS Code's test framework
-describe('Env Vault Extension', function() {
+describe('DotVault Extension', function() {
   it('should have a valid package.json', function() {
     const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
     assert.ok(fs.existsSync(packageJsonPath), 'package.json should exist');
     
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-    assert.ok(packageJson.name === 'env-vault', 'Package name should be env-vault');
+    assert.ok(packageJson.name === 'dot-vault', 'Package name should be dot-vault');
     assert.ok(packageJson.version, 'Version should be defined');
   });
 
