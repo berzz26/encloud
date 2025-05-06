@@ -81,8 +81,8 @@
   },
   "scripts": {
     "lint": "eslint .",
-    "pretest": "pnpm run lint",
-    "test": "vscode-test",
+    "test:vscode": "vscode-test",
+    "test": "mocha -r ts-node/register src/test/**/*.ts",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "build": "pnpm run compile",
@@ -121,6 +121,7 @@
     "globals": "^16.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.1",
+    "mocha": "^11.2.2",
     "prettier": "^3.5.3",
     "rimraf": "^5.0.5",
     "sinon": "^17.0.1",
