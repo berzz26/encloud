@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "env-vault" extension will be documented in this file.
+All notable changes to the "dot-vault" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
@@ -55,7 +55,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.1.4] - Initial release
 
-- Initial version of Env Vault extension
+- Initial version of DotVault extension
 - Secure encryption and storage of .env files in Supabase
 - GitHub authentication via Supabase
 - Basic commands for syncing and restoring .env files

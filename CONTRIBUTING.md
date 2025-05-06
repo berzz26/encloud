@@ -1,6 +1,6 @@
-# Contributing to Env Vault
+# Contributing to DotVault
 
-Thank you for considering contributing to Env Vault! This document provides guidelines and instructions for contributing to this project.
+Thank you for considering contributing to DotVault! This document provides guidelines and instructions for contributing to this project.
 
 ## Code of Conduct
 
@@ -11,7 +11,7 @@ By participating in this project, you agree to abide by our Code of Conduct. Ple
 ### Reporting Bugs
 
 Before submitting a bug report:
-- Check the [issue tracker](https://github.com/berzz26/env-vault/issues) to see if the problem has already been reported
+- Check the [issue tracker](https://github.com/berzz26/dot-vault/issues) to see if the problem has already been reported
 - Ensure you're using the latest version of the extension
 
 When submitting a bug report, please include:
@@ -112,4 +112,4 @@ The maintainers will handle the release process, including:
 
 If you have any questions about contributing, please open an issue or contact the maintainers.
 
-Thank you for contributing to Env Vault!
+Thank you for contributing to DotVault!

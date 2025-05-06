@@ -16,7 +16,7 @@ import {
 /**
  * URI handler for OAuth callbacks
  */
-class EnvVaultUriHandler implements vscode.UriHandler {
+class DotVaultUriHandler implements vscode.UriHandler {
   /**
    * Handle the URI callback from OAuth authentication
    * @param uri The URI containing OAuth tokens
@@ -199,7 +199,7 @@ async function syncEnvFiles(): Promise<void> {
   try {
     const user = await auth.getCurrentUser();
     if (!user) {
-      vscode.window.showErrorMessage('Not logged in. Please run "EnvVault: Login" first.');
+      vscode.window.showErrorMessage('Not logged in. Please run "DotVault: Login" first.');
       return;
     }
 
@@ -306,7 +306,7 @@ async function restoreEnvFiles(): Promise<void> {
   try {
     const user = await auth.getCurrentUser();
     if (!user) {
-      vscode.window.showErrorMessage('Not logged in. Please run "EnvVault: Login" first.');
+      vscode.window.showErrorMessage('Not logged in. Please run "DotVault: Login" first.');
       return;
     }
 
@@ -387,7 +387,7 @@ async function clearEnvData(): Promise<void> {
   try {
     const user = await auth.getCurrentUser();
     if (!user) {
-      vscode.window.showErrorMessage('Not logged in. Please run "EnvVault: Login" first.');
+      vscode.window.showErrorMessage('Not logged in. Please run "DotVault: Login" first.');
       return;
     }
 
@@ -431,7 +431,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Register URI handler for OAuth callbacks
     context.subscriptions.push(
-      vscode.window.registerUriHandler(new EnvVaultUriHandler())
+      vscode.window.registerUriHandler(new DotVaultUriHandler())
     );
 
     // Register commands

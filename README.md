@@ -1,19 +1,19 @@
-# Env Vault
+# DotVault
 
 <div align="center">
   
-![Env Vault Logo](https://via.placeholder.com/150x150.png?text=Env+Vault)
+![DotVault Logo](https://via.placeholder.com/150x150.png?text=DotVault)
 
 **Securely sync and restore `.env` files across your VS Code projects**
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/AumTamboli.env-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.env-vault)
-[![Downloads](https://img.shields.io/visual-studio-marketplace/d/AumTamboli.env-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.env-vault)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/AumTamboli.env-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.env-vault)
-[![License](https://img.shields.io/github/license/berzz26/env-vault)](https://github.com/berzz26/env-vault/blob/main/LICENSE)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/AumTamboli.dot-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.dot-vault)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/AumTamboli.dot-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.dot-vault)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/AumTamboli.dot-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.dot-vault)
+[![License](https://img.shields.io/github/license/berzz26/dot-vault)](https://github.com/berzz26/dot-vault/blob/main/LICENSE)
 
 </div>
 
-Env Vault allows developers to securely encrypt and store `.env` files in Supabase using password-based encryption. Perfect for managing environment variables across different machines and projects.
+DotVault allows developers to securely encrypt and store `.env` files in Supabase using password-based encryption. Perfect for managing environment variables across different machines and projects.
 
 ## 📸 Screenshots
 
@@ -44,13 +44,13 @@ Env Vault allows developers to securely encrypt and store `.env` files in Supaba
 
 1. Open VS Code
 2. Go to Extensions (Ctrl+Shift+X / Cmd+Shift+X)
-3. Search for "Env Vault"
+3. Search for "DotVault"
 4. Click Install
 
 ### First-time Setup
 
 1. Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-2. Type "EnvVault: Login" and press Enter
+2. Type "DotVault: Login" and press Enter
 3. Authenticate with your GitHub account
 4. Create your encryption password (minimum 8 characters)
    - **Important**: This password is used to encrypt your data and cannot be recovered if lost
@@ -59,17 +59,17 @@ Env Vault allows developers to securely encrypt and store `.env` files in Supaba
 
 1. **Syncing .env Files**:
    - Open the Command Palette
-   - Run "EnvVault: Sync .env Files"
+   - Run "DotVault: Sync .env Files"
    - Select files to encrypt and sync
 
 2. **Restoring .env Files**:
    - Open the Command Palette
-   - Run "EnvVault: Restore .env Files"
+   - Run "DotVault: Restore .env Files"
    - Enter your password to decrypt files
 
 3. **Clearing Stored Data**:
    - Open the Command Palette
-   - Run "EnvVault: Clear .env Data"
+   - Run "DotVault: Clear .env Data"
    - Confirm to remove all stored .env files
 
 ## 🔒 Security
@@ -99,8 +99,8 @@ This project uses [pnpm](https://pnpm.io/) as its package manager for faster and
 
 2. Clone the repository:
    ```bash
-   git clone https://github.com/berzz26/env-vault.git
-   cd env-vault
+   git clone https://github.com/berzz26/dot-vault.git
+   cd dot-vault
    ```
 
 3. Install dependencies:
@@ -138,7 +138,7 @@ This will create a `.vsix` file that can be installed manually in VS Code.
 
 2. **Cannot Sync Files**
    - Verify that your workspace contains `.env` files
-   - Ensure you're logged in (run "EnvVault: Login" first)
+   - Ensure you're logged in (run "DotVault: Login" first)
    - Check if you have write permissions to the workspace
 
 3. **Password Not Working**
@@ -153,7 +153,7 @@ This will create a `.vsix` file that can be installed manually in VS Code.
 
 ### Getting Help
 
-If you encounter issues not covered here, please [open an issue](https://github.com/berzz26/env-vault/issues/new) on GitHub.
+If you encounter issues not covered here, please [open an issue](https://github.com/berzz26/dot-vault/issues/new) on GitHub.
 
 ## ⚠️ Important Notes
 
