@@ -1,5 +1,21 @@
+# Dependencies
 node_modules
+
+# Build output
+dist/
 .vscode-test/
 *.vsix
+
+# Environment variables
 .env.local
 .env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.idea
+.DS_Store
