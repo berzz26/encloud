@@ -100,7 +100,7 @@ async function syncEnvFiles(context) {
 		]);
 	}
 
-	vscode.window.showInformationMessage(`✅ ${selected.files.length} .env file(s) synced to Supabase.`);
+	vscode.window.showInformationMessage(`${selected.files.length} .env file(s) synced to Supabase.`);
 }
 
 async function restoreEnvFiles(context) {
@@ -118,7 +118,7 @@ async function restoreEnvFiles(context) {
 		return;
 	}
 
-	const folderPath = workspaceFolders[0].uri.fsPath;
+	const rootPath = workspaceFolders[0].uri.fsPath;
 
 	const { data, error } = await auth.supabase.from('envs').select('*').eq('user_id', user.id);
 	if (!data || data.length === 0) {
@@ -128,7 +128,17 @@ async function restoreEnvFiles(context) {
 
 	for (const row of data) {
 		const decrypted = decrypt(row.content, secretKey);
-		fs.writeFileSync(path.join(folderPath, row.filename), decrypted, 'utf8');
+		
+		// Find existing .env file with same name in workspace
+		const pattern = new vscode.RelativePattern(workspaceFolders[0], `**/${row.filename}`);
+		const existingFiles = await vscode.workspace.findFiles(pattern);
+		
+		// If existing file found, update it, otherwise create in root
+		const targetPath = existingFiles.length > 0 
+			? existingFiles[0].fsPath 
+			: path.join(rootPath, row.filename);
+
+		fs.writeFileSync(targetPath, decrypted, 'utf8');
 	}
 
 	vscode.window.showInformationMessage(' .env files restored.');
@@ -141,8 +151,18 @@ async function clearEnvData(context) {
 		return;
 	}
 
+	const answer = await vscode.window.showWarningMessage(
+		'⚠️ Are you sure you want to clear all .env files from Supabase? This action cannot be undone.',
+		'Yes, Clear All',
+		'Cancel'
+	);
+
+	if (answer !== 'Yes, Clear All') {
+		return;
+	}
+
 	await auth.supabase.from('envs').delete().eq('user_id', user.id);
-	vscode.window.showInformationMessage('🧹 .env data cleared from Supabase.');
+	vscode.window.showInformationMessage(' All .env files have been cleared from Supabase.');
 }
 
 async function activate(context) {
