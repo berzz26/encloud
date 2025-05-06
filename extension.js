@@ -10,6 +10,82 @@ class EnvVaultUriHandler {
 	}
 }
 
+async function deriveKey(password, salt) {
+	return new Promise((resolve, reject) => {
+		crypto.pbkdf2(password, salt, 100000, 32, 'sha256', (err, key) => {
+			if (err) reject(err);
+			else resolve(key);
+		});
+	});
+}
+
+async function hashPassword(password, salt) {
+	return new Promise((resolve, reject) => {
+		crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, key) => {
+			if (err) reject(err);
+			else resolve(key.toString('hex'));
+		});
+	});
+}
+
+async function setupPassword() {
+	const password = await vscode.window.showInputBox({
+		prompt: 'Set up a password to encrypt your .env files (min. 8 characters)',
+		password: true,
+		validateInput: text => text.length < 8 ? 'Password must be at least 8 characters' : null
+	});
+	
+	if (!password) throw new Error('Password is required for setup');
+	
+	const salt = crypto.randomBytes(16);
+	const verificationHash = await hashPassword(password, salt);
+	
+	return {
+		password,
+		salt: salt.toString('hex'),
+		verificationHash
+	};
+}
+
+async function requestPassword() {
+	return vscode.window.showInputBox({
+		prompt: 'Enter your password to access .env files',
+		password: true
+	});
+}
+
+async function getDerivedKey(userId, context) {
+	const { data } = await auth.supabase
+		.from('users')
+		.select('salt, verification_hash')
+		.eq('user_id', userId)
+		.single();
+
+	let password, salt;
+
+	if (!data?.salt) {
+		const setup = await setupPassword();
+		await auth.supabase.from('users').upsert([{
+			user_id: userId,
+			salt: setup.salt,
+			verification_hash: setup.verificationHash
+		}]);
+		password = setup.password;
+		salt = setup.salt;
+	} else {
+		password = await requestPassword();
+		if (!password) throw new Error('Password required');
+
+		salt = data.salt;
+		const hash = await hashPassword(password, Buffer.from(salt, 'hex'));
+		if (hash !== data.verification_hash) {
+			throw new Error('Invalid password');
+		}
+	}
+
+	return deriveKey(password, Buffer.from(salt, 'hex'));
+}
+
 function encrypt(text, key) {
 	const iv = crypto.randomBytes(16);
 	const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -26,18 +102,6 @@ function decrypt(payload, key) {
 	return decrypted.toString('utf8');
 }
 
-async function getOrCreateSecretKey(userId) {
-	const { data, error } = await auth.supabase.from('users').select('secret_key').eq('user_id', userId).single();
-
-	if (data?.secret_key) {
-		return Buffer.from(data.secret_key, 'hex');
-	}
-
-	const newKey = crypto.randomBytes(32).toString('hex');
-	await auth.supabase.from('users').upsert([{ user_id: userId, secret_key: newKey }]);
-	return Buffer.from(newKey, 'hex');
-}
-
 async function syncEnvFiles(context) {
 	const user = await auth.getCurrentUser();
 	if (!user) {
@@ -45,62 +109,62 @@ async function syncEnvFiles(context) {
 		return;
 	}
 
-	const secretKey = await getOrCreateSecretKey(user.id);
-	const workspaceFolders = vscode.workspace.workspaceFolders;
+	try {
+		const derivedKey = await getDerivedKey(user.id, context);
+		const workspaceFolders = vscode.workspace.workspaceFolders;
 
-	if (!workspaceFolders) {
-		vscode.window.showErrorMessage('No workspace is open.');
+		if (!workspaceFolders) {
+			vscode.window.showErrorMessage('No workspace is open.');
+			return;
+		}
+
+		const envFiles = [];
+		for (const folder of workspaceFolders) {
+			const pattern = new vscode.RelativePattern(folder, '**/.env*');
+			const files = await vscode.workspace.findFiles(pattern);
+			envFiles.push(...files);
+		}
+
+		if (envFiles.length === 0) {
+			vscode.window.showInformationMessage('No .env files found to sync.');
+			return;
+		}
+
+		const items = [
+			{ label: "Sync all .env files", description: `(${envFiles.length} files)`, files: envFiles },
+			...envFiles.map(file => ({
+				label: vscode.workspace.asRelativePath(file),
+				description: "Single file",
+				files: [file]
+			}))
+		];
+
+		const selected = await vscode.window.showQuickPick(items, {
+			placeHolder: 'Select .env files to sync',
+			canPickMany: false
+		});
+
+		if (!selected) return;
+
+		for (const fileUri of selected.files) {
+			const content = await vscode.workspace.fs.readFile(fileUri);
+			const filename = path.basename(fileUri.fsPath);
+			const encryptedContent = encrypt(content.toString(), derivedKey);
+
+			await auth.supabase.from('envs').upsert([
+				{
+					user_id: user.id,
+					filename,
+					content: encryptedContent
+				}
+			]);
+		}
+
+		vscode.window.showInformationMessage(`${selected.files.length} .env file(s) synced to Supabase.`);
+	} catch (error) {
+		vscode.window.showErrorMessage('Failed to encrypt: ' + error.message);
 		return;
 	}
-
-	// Find all .env files in workspace
-	const envFiles = [];
-	for (const folder of workspaceFolders) {
-		// Modified pattern to catch all .env* files
-		const pattern = new vscode.RelativePattern(folder, '**/.env*');
-		const files = await vscode.workspace.findFiles(pattern);
-		envFiles.push(...files);
-	}
-
-	if (envFiles.length === 0) {
-		vscode.window.showInformationMessage('No .env files found to sync.');
-		return;
-	}
-
-	// Create QuickPick items
-	const items = [
-		{ label: "Sync all .env files", description: `(${envFiles.length} files)`, files: envFiles },
-		...envFiles.map(file => ({
-			label: vscode.workspace.asRelativePath(file),
-			description: "Single file",
-			files: [file]
-		}))
-	];
-
-	// Show QuickPick
-	const selected = await vscode.window.showQuickPick(items, {
-		placeHolder: 'Select .env files to sync',
-		canPickMany: false
-	});
-
-	if (!selected) return;
-
-	// Sync selected files
-	for (const fileUri of selected.files) {
-		const content = await vscode.workspace.fs.readFile(fileUri);
-		const filename = path.basename(fileUri.fsPath);
-		const encryptedContent = encrypt(content.toString(), secretKey);
-
-		await auth.supabase.from('envs').upsert([
-			{
-				user_id: user.id,
-				filename,
-				content: encryptedContent
-			}
-		]);
-	}
-
-	vscode.window.showInformationMessage(`${selected.files.length} .env file(s) synced to Supabase.`);
 }
 
 async function restoreEnvFiles(context) {
@@ -110,38 +174,41 @@ async function restoreEnvFiles(context) {
 		return;
 	}
 
-	const secretKey = await getOrCreateSecretKey(user.id);
-	const workspaceFolders = vscode.workspace.workspaceFolders;
+	try {
+		const derivedKey = await getDerivedKey(user.id, context);
+		const workspaceFolders = vscode.workspace.workspaceFolders;
 
-	if (!workspaceFolders) {
-		vscode.window.showErrorMessage('No workspace is open.');
+		if (!workspaceFolders) {
+			vscode.window.showErrorMessage('No workspace is open.');
+			return;
+		}
+
+		const rootPath = workspaceFolders[0].uri.fsPath;
+
+		const { data, error } = await auth.supabase.from('envs').select('*').eq('user_id', user.id);
+		if (!data || data.length === 0) {
+			vscode.window.showInformationMessage('No .env files found in Supabase.');
+			return;
+		}
+
+		for (const row of data) {
+			const decrypted = decrypt(row.content, derivedKey);
+			
+			const pattern = new vscode.RelativePattern(workspaceFolders[0], `**/${row.filename}`);
+			const existingFiles = await vscode.workspace.findFiles(pattern);
+			
+			const targetPath = existingFiles.length > 0 
+				? existingFiles[0].fsPath 
+				: path.join(rootPath, row.filename);
+
+			fs.writeFileSync(targetPath, decrypted, 'utf8');
+		}
+
+		vscode.window.showInformationMessage(' .env files restored.');
+	} catch (error) {
+		vscode.window.showErrorMessage('Failed to decrypt: ' + error.message);
 		return;
 	}
-
-	const rootPath = workspaceFolders[0].uri.fsPath;
-
-	const { data, error } = await auth.supabase.from('envs').select('*').eq('user_id', user.id);
-	if (!data || data.length === 0) {
-		vscode.window.showInformationMessage('No .env files found in Supabase.');
-		return;
-	}
-
-	for (const row of data) {
-		const decrypted = decrypt(row.content, secretKey);
-		
-		// Find existing .env file with same name in workspace
-		const pattern = new vscode.RelativePattern(workspaceFolders[0], `**/${row.filename}`);
-		const existingFiles = await vscode.workspace.findFiles(pattern);
-		
-		// If existing file found, update it, otherwise create in root
-		const targetPath = existingFiles.length > 0 
-			? existingFiles[0].fsPath 
-			: path.join(rootPath, row.filename);
-
-		fs.writeFileSync(targetPath, decrypted, 'utf8');
-	}
-
-	vscode.window.showInformationMessage(' .env files restored.');
 }
 
 async function clearEnvData(context) {
@@ -166,18 +233,13 @@ async function clearEnvData(context) {
 }
 
 async function activate(context) {
-	// Initialize auth state
 	auth.initializeState(context);
-	
-	// Restore session if exists
 	await auth.restoreSession();
 
-	// Register URI handler
 	context.subscriptions.push(
 		vscode.window.registerUriHandler(new EnvVaultUriHandler())
 	);
 
-	// Register commands
 	context.subscriptions.push(
 		vscode.commands.registerCommand('envsync.login', () => auth.login()),
 		vscode.commands.registerCommand('supabase-github.logout', () => auth.logout()),
