@@ -4,6 +4,13 @@ All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.5] - 2025-05-07
+
+### Fixed
+
+- Added explicit command activation events to ensure commands are registered properly in VS Code Marketplace
+- Added both modern and legacy activation approaches for maximum compatibility
+
 ## [0.4.4] - 2025-05-07
 
 ### Fixed
