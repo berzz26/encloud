@@ -2,7 +2,7 @@
   "name": "encloud",
   "displayName": "Encloud",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",
@@ -12,12 +12,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onUriHandler",
-    "onCommand:encloud.login",
-    "onCommand:encloud.sync",
-    "onCommand:encloud.restore",
-    "onCommand:encloud.clear",
-    "onCommand:supabase-github.logout"
+    "onUriHandler"
   ],
   "main": "./dist/src/extension.js",
   "contributes": {

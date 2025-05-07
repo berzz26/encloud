@@ -4,6 +4,14 @@ All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.3] - 2025-05-07
+
+### Fixed
+
+- Fixed extension activation events to properly register commands
+- Added explicit file inclusion list to ensure all required files are published
+- Updated .vscodeignore to prevent dist directory exclusion
+
 ## [0.4.2] - 2025-05-07
 
 ### Fixed
