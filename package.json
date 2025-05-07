@@ -2,7 +2,7 @@
   "name": "encloud",
   "displayName": "Encloud",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",
@@ -12,7 +12,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onUriHandler"
+    "onUriHandler",
+    "onStartupFinished"
   ],
   "main": "./dist/src/extension.js",
   "contributes": {
@@ -82,7 +83,7 @@
     "watch": "tsc -watch -p ./",
     "build": "pnpm run compile",
     "package": "vsce package --no-dependencies",
-    "publish": "vsce publish",
+    "publish": "vsce publish --no-dependencies",
     "version:patch": "pnpm version patch --no-git-tag-version",
     "version:minor": "pnpm version minor --no-git-tag-version",
     "version:major": "pnpm version major --no-git-tag-version",

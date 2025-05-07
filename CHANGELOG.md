@@ -4,6 +4,15 @@ All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.4] - 2025-05-07
+
+### Fixed
+
+- Fixed "command not found" issue when installing from VS Code Marketplace
+- Updated activation events to use modern `onStartupFinished` approach
+- Ensured extension activates properly after project rename from envsync to encloud
+- Added `--no-dependencies` flag to publish script for consistent packaging
+
 ## [0.4.3] - 2025-05-07
 
 ### Fixed
