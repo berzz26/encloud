@@ -1,5 +1,5 @@
 /**
- * Authentication module for DotVault
+ * Authentication module for Encloud
  * Handles GitHub OAuth authentication via Supabase
  */
 
@@ -57,7 +57,7 @@ export async function login(): Promise<boolean | null> {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'github',
             options: {
-                redirectTo: 'vscode://AumTamboli.dot-vault/callback'
+                redirectTo: 'vscode://AumTamboli.encloud/callback'
             }
         });
 
@@ -101,7 +101,7 @@ export async function handleDeepLink(uri: vscode.Uri): Promise<Session | null> {
 
         if (data.session) {
             currentSession = data.session;
-            await globalState.update('dotvault.session', data.session);
+            await globalState.update('encloud.session', data.session);
             vscode.window.showInformationMessage(`Logged in as ${data.session.user.email}`);
             return data.session;
         } else {
@@ -122,7 +122,7 @@ export async function logout(): Promise<void> {
     try {
         await supabase.auth.signOut();
         currentSession = null;
-        await globalState.update('dotvault.session', null);
+        await globalState.update('encloud.session', null);
         vscode.window.showInformationMessage('Logged out successfully.');
     } catch (err) {
         const error = err as Error;
@@ -172,7 +172,7 @@ export async function getCurrentUser(): Promise<User | null> {
  */
 export async function restoreSession(): Promise<boolean> {
     try {
-        const savedSession = await globalState.get<Session>('dotvault.session');
+        const savedSession = await globalState.get<Session>('encloud.session');
         if (savedSession) {
             currentSession = savedSession;
             return true;

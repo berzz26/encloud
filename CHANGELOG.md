@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "dot-vault" extension will be documented in this file.
+All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
@@ -8,11 +8,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ### Changed
 
-- Renamed project from "Env Vault" to "DotVault" for better branding
+- Renamed project from "DotVault" to "Encloud" for better branding
 - Updated all references in code and documentation
-- Changed package name from "env-vault" to "dot-vault"
+- Changed package name from "dot-vault" to "encloud"
 - Updated GitHub repository references
-- Modified command categories from "EnvVault" to "DotVault"
+- Modified command categories from "DotVault" to "Encloud"
 
 ### Added
 
@@ -70,7 +70,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.1.4] - Initial release
 
-- Initial version of DotVault extension
+- Initial version of Encloud extension
 - Secure encryption and storage of .env files in Supabase
 - GitHub authentication via Supabase
 - Basic commands for syncing and restoring .env files

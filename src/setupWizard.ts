@@ -1,5 +1,5 @@
 /**
- * Setup Wizard for DotVault
+ * Setup Wizard for Encloud
  * 
  * Provides a guided setup experience for first-time users
  */
@@ -21,7 +21,7 @@ enum SetupStep {
  */
 export async function runSetupWizard(context: vscode.ExtensionContext): Promise<void> {
   // Check if the wizard has already been completed
-  const wizardCompleted = context.globalState.get<boolean>('dotvault.wizardCompleted');
+  const wizardCompleted = context.globalState.get<boolean>('encloud.wizardCompleted');
   if (wizardCompleted) {
     return;
   }
@@ -81,15 +81,15 @@ export async function runSetupWizard(context: vscode.ExtensionContext): Promise<
 
   if (!cancelled) {
     // Mark wizard as completed
-    await context.globalState.update('dotvault.wizardCompleted', true);
+    await context.globalState.update('encloud.wizardCompleted', true);
     
     // Show completion message
     vscode.window.showInformationMessage(
-      'DotVault setup complete! You can now sync and restore your .env files.',
+      'Encloud setup complete! You can now sync and restore your .env files.',
       'View Commands'
     ).then(selection => {
       if (selection === 'View Commands') {
-        vscode.commands.executeCommand('workbench.action.quickOpen', '>DotVault:');
+        vscode.commands.executeCommand('workbench.action.quickOpen', '>Encloud:');
       }
     });
   }
@@ -101,7 +101,7 @@ export async function runSetupWizard(context: vscode.ExtensionContext): Promise<
  */
 async function showWelcomeStep(): Promise<string> {
   const result = await vscode.window.showInformationMessage(
-    'Welcome to DotVault! This wizard will help you set up the extension for securely managing your .env files.',
+    'Welcome to Encloud! This wizard will help you set up the extension for securely managing your .env files.',
     { modal: true },
     'Next',
     'Skip'
@@ -126,7 +126,7 @@ async function showLoginStep(): Promise<string> {
   }
 
   const result = await vscode.window.showInformationMessage(
-    'First, you need to log in with your GitHub account. This allows DotVault to securely store your encrypted .env files.',
+    'First, you need to log in with your GitHub account. This allows Encloud to securely store your encrypted .env files.',
     { modal: true },
     'Login with GitHub',
     'Back',
@@ -182,7 +182,7 @@ async function showWorkspaceStep(): Promise<string> {
   
   if (!workspaceFolders || workspaceFolders.length === 0) {
     const result = await vscode.window.showWarningMessage(
-      'No workspace is currently open. You\'ll need to open a workspace with .env files to use DotVault.',
+      'No workspace is currently open. You\'ll need to open a workspace with .env files to use Encloud.',
       { modal: true },
       'Finish Setup Anyway',
       'Back'
@@ -208,7 +208,7 @@ async function showWorkspaceStep(): Promise<string> {
 
   if (envFilesFound) {
     const result = await vscode.window.showInformationMessage(
-      '.env files were found in your workspace. You can sync these files using the "DotVault: Sync .env Files" command.',
+      '.env files were found in your workspace. You can sync these files using the "Encloud: Sync .env Files" command.',
       { modal: true },
       'Finish Setup',
       'Back'
@@ -221,7 +221,7 @@ async function showWorkspaceStep(): Promise<string> {
     }
   } else {
     const result = await vscode.window.showInformationMessage(
-      'No .env files were found in your workspace. You can create .env files and then sync them using the "DotVault: Sync .env Files" command.',
+      'No .env files were found in your workspace. You can create .env files and then sync them using the "Encloud: Sync .env Files" command.',
       { modal: true },
       'Finish Setup',
       'Back'
