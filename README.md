@@ -1,19 +1,19 @@
-# DotVault
+# Encloud
 
 <div align="center">
   
-![DotVault Logo](https://via.placeholder.com/150x150.png?text=DotVault)
+![Encloud Logo](https://via.placeholder.com/150x150.png?text=Encloud)
 
 **Securely sync and restore `.env` files across your VS Code projects**
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/AumTamboli.dot-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.dot-vault)
-[![Downloads](https://img.shields.io/visual-studio-marketplace/d/AumTamboli.dot-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.dot-vault)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/AumTamboli.dot-vault)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.dot-vault)
-[![License](https://img.shields.io/github/license/berzz26/dot-vault)](https://github.com/berzz26/dot-vault/blob/main/LICENSE)
+[![Version](https://img.shields.io/visual-studio-marketplace/v/AumTamboli.encloud)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.encloud)
+[![Downloads](https://img.shields.io/visual-studio-marketplace/d/AumTamboli.encloud)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.encloud)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/AumTamboli.encloud)](https://marketplace.visualstudio.com/items?itemName=AumTamboli.encloud)
+[![License](https://img.shields.io/github/license/berzz26/encloud)](https://github.com/berzz26/encloud/blob/main/LICENSE)
 
 </div>
 
-DotVault allows developers to securely encrypt and store `.env` files in Supabase using password-based encryption. Perfect for managing environment variables across different machines and projects.
+Encloud allows developers to securely encrypt and store `.env` files in Supabase using password-based encryption. Perfect for managing environment variables across different machines and projects.
 
 ## 📸 Screenshots
 
@@ -44,13 +44,13 @@ DotVault allows developers to securely encrypt and store `.env` files in Supabas
 
 1. Open VS Code
 2. Go to Extensions (Ctrl+Shift+X / Cmd+Shift+X)
-3. Search for "DotVault"
+3. Search for "Encloud"
 4. Click Install
 
 ### First-time Setup
 
 1. Open the Command Palette (Ctrl+Shift+P / Cmd+Shift+P)
-2. Type "DotVault: Login" and press Enter
+2. Type "Encloud: Login" and press Enter
 3. Authenticate with your GitHub account
 4. Create your encryption password (minimum 8 characters)
    - **Important**: This password is used to encrypt your data and cannot be recovered if lost
@@ -59,17 +59,17 @@ DotVault allows developers to securely encrypt and store `.env` files in Supabas
 
 1. **Syncing .env Files**:
    - Open the Command Palette
-   - Run "DotVault: Sync .env Files"
+   - Run "Encloud: Sync .env Files"
    - Select files to encrypt and sync
 
 2. **Restoring .env Files**:
    - Open the Command Palette
-   - Run "DotVault: Restore .env Files"
+   - Run "Encloud: Restore .env Files"
    - Enter your password to decrypt files
 
 3. **Clearing Stored Data**:
    - Open the Command Palette
-   - Run "DotVault: Clear .env Data"
+   - Run "Encloud: Clear .env Data"
    - Confirm to remove all stored .env files
 
 ## 🔒 Security
@@ -99,8 +99,8 @@ This project uses [pnpm](https://pnpm.io/) as its package manager for faster and
 
 2. Clone the repository:
    ```bash
-   git clone https://github.com/berzz26/dot-vault.git
-   cd dot-vault
+   git clone https://github.com/berzz26/encloud.git
+   cd encloud
    ```
 
 3. Install dependencies:
@@ -138,7 +138,7 @@ This will create a `.vsix` file that can be installed manually in VS Code.
 
 2. **Cannot Sync Files**
    - Verify that your workspace contains `.env` files
-   - Ensure you're logged in (run "DotVault: Login" first)
+   - Ensure you're logged in (run "Encloud: Login" first)
    - Check if you have write permissions to the workspace
 
 3. **Password Not Working**
@@ -153,7 +153,7 @@ This will create a `.vsix` file that can be installed manually in VS Code.
 
 ### Getting Help
 
-If you encounter issues not covered here, please [open an issue](https://github.com/berzz26/dot-vault/issues/new) on GitHub.
+If you encounter issues not covered here, please [open an issue](https://github.com/berzz26/encloud/issues/new) on GitHub.
 
 ## ⚠️ Important Notes
 
