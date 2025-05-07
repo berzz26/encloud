@@ -4,6 +4,15 @@ All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.5.0] - 2025-05-07
+
+### Fixed
+
+- Fixed command registration issue in VS Code Marketplace
+- Ensured consistent extension ID and command naming throughout the codebase
+- Fixed OAuth callback URL to ensure proper authentication flow
+- Improved extension startup reliability after project rename
+
 ## [0.4.5] - 2025-05-07
 
 ### Fixed

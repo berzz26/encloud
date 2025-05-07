@@ -2,7 +2,7 @@
   "name": "encloud",
   "displayName": "Encloud",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",
