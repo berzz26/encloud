@@ -4,6 +4,14 @@ All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.1] - 2025-05-07
+
+### Fixed
+
+- Fixed command naming to use 'encloud' prefix consistently
+- Updated OAuth callback URL to use new extension identifier
+- Fixed global state keys to use 'encloud' namespace
+
 ## [0.4.0] - 2025-05-06
 
 ### Changed
@@ -17,7 +25,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 
 - Added MIT LICENSE.md file
-
 
 ## [0.3.2] - 2025-05-06
 
