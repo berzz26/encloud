@@ -4,6 +4,14 @@ All notable changes to the "encloud" extension will be documented in this file.
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.2] - 2025-05-07
+
+### Fixed
+
+- Fixed extension activation events to properly register commands
+- Resolved "command not found" error for encloud.login
+- Ensured proper command registration during extension startup
+
 ## [0.4.1] - 2025-05-07
 
 ### Fixed
