@@ -16,7 +16,7 @@ import {
 /**
  * URI handler for OAuth callbacks
  */
-class DotVaultUriHandler implements vscode.UriHandler {
+class EncloudUriHandler implements vscode.UriHandler {
   /**
    * Handle the URI callback from OAuth authentication
    * @param uri The URI containing OAuth tokens
@@ -199,7 +199,7 @@ async function syncEnvFiles(): Promise<void> {
   try {
     const user = await auth.getCurrentUser();
     if (!user) {
-      vscode.window.showErrorMessage('Not logged in. Please run "DotVault: Login" first.');
+      vscode.window.showErrorMessage('Not logged in. Please run "Encloud: Login" first.');
       return;
     }
 
@@ -306,7 +306,7 @@ async function restoreEnvFiles(): Promise<void> {
   try {
     const user = await auth.getCurrentUser();
     if (!user) {
-      vscode.window.showErrorMessage('Not logged in. Please run "DotVault: Login" first.');
+      vscode.window.showErrorMessage('Not logged in. Please run "Encloud: Login" first.');
       return;
     }
 
@@ -387,7 +387,7 @@ async function clearEnvData(): Promise<void> {
   try {
     const user = await auth.getCurrentUser();
     if (!user) {
-      vscode.window.showErrorMessage('Not logged in. Please run "DotVault: Login" first.');
+      vscode.window.showErrorMessage('Not logged in. Please run "Encloud: Login" first.');
       return;
     }
 
@@ -431,12 +431,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     // Register URI handler for OAuth callbacks
     context.subscriptions.push(
-      vscode.window.registerUriHandler(new DotVaultUriHandler())
+      vscode.window.registerUriHandler(new EncloudUriHandler())
     );
 
     // Register commands
     context.subscriptions.push(
-      vscode.commands.registerCommand('envsync.login', async () => {
+      vscode.commands.registerCommand('encloud.login', async () => {
         try {
           await auth.login();
         } catch (error) {
@@ -452,15 +452,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
       }),
       
-      vscode.commands.registerCommand('envsync.sync', async () => {
+      vscode.commands.registerCommand('encloud.sync', async () => {
         await syncEnvFiles();
       }),
       
-      vscode.commands.registerCommand('envsync.restore', async () => {
+      vscode.commands.registerCommand('encloud.restore', async () => {
         await restoreEnvFiles();
       }),
       
-      vscode.commands.registerCommand('envsync.clear', async () => {
+      vscode.commands.registerCommand('encloud.clear', async () => {
         await clearEnvData();
       })
     );

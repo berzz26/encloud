@@ -1,6 +1,6 @@
 {
-  "name": "dot-vault",
-  "displayName": "DotVault",
+  "name": "encloud",
+  "displayName": "Encloud",
   "description": "keep track of your env files across multiple workspaces and different environments!",
   "version": "0.3.2",
   "publisher": "AumTamboli",
@@ -26,50 +26,50 @@
       {
         "command": "supabase-github.logout",
         "title": " Logout",
-        "category": "DotVault"
+        "category": "Encloud"
       },
       {
-        "command": "envsync.login",
+        "command": "encloud.login",
         "title": " Login",
-        "category": "DotVault"
+        "category": "Encloud"
       },
       {
-        "command": "envsync.sync",
+        "command": "encloud.sync",
         "title": " Sync .env Files",
-        "category": "DotVault"
+        "category": "Encloud"
       },
       {
-        "command": "envsync.restore",
+        "command": "encloud.restore",
         "title": " Restore .env Files",
-        "category": "DotVault"
+        "category": "Encloud"
       },
       {
-        "command": "envsync.clear",
+        "command": "encloud.clear",
         "title": " Clear .env Data",
-        "category": "DotVault"
+        "category": "Encloud"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "envsync.login",
-          "group": "DotVault"
+          "command": "encloud.login",
+          "group": "Encloud"
         },
         {
           "command": "supabase-github.logout",
-          "group": "DotVault"
+          "group": "Encloud"
         },
         {
-          "command": "envsync.sync",
-          "group": "DotVault"
+          "command": "encloud.sync",
+          "group": "Encloud"
         },
         {
-          "command": "envsync.restore",
-          "group": "DotVault"
+          "command": "encloud.restore",
+          "group": "Encloud"
         },
         {
-          "command": "envsync.clear",
-          "group": "DotVault"
+          "command": "encloud.clear",
+          "group": "Encloud"
         }
       ]
     }
@@ -125,7 +125,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/berzz26/dot-vault"
+    "url": "https://github.com/berzz26/encloud"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
