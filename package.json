@@ -12,64 +12,69 @@
     "Other"
   ],
   "activationEvents": [
+    "onCommand:encloud.login",
+    "onCommand:encloud.sync",
+    "onCommand:encloud.restore",
+    "onCommand:encloud.clear",
+    "onCommand:encloud.logout",
     "onUriHandler"
   ],
   "main": "./dist/src/extension.js",
   "contributes": {
     "authentication": [
       {
-        "id": "supabase-github",
+        "id": "encloud",
         "label": "Supabase (GitHub)"
       }
     ],
     "commands": [
       {
-        "command": "supabase-github.logout",
+        "command": "encloud.logout",
         "title": " Logout",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.login",
         "title": " Login",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.sync",
         "title": " Sync .env Files",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.restore",
         "title": " Restore .env Files",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.clear",
         "title": " Clear .env Data",
-        "category": "Encloud"
+        "category": "encloud"
       }
     ],
     "menus": {
       "commandPalette": [
         {
           "command": "encloud.login",
-          "group": "Encloud"
+          "group": "encloud"
         },
         {
-          "command": "supabase-github.logout",
-          "group": "Encloud"
+          "command": "encloud.logout",
+          "group": "encloud"
         },
         {
           "command": "encloud.sync",
-          "group": "Encloud"
+          "group": "encloud"
         },
         {
           "command": "encloud.restore",
-          "group": "Encloud"
+          "group": "encloud"
         },
         {
           "command": "encloud.clear",
-          "group": "Encloud"
+          "group": "encloud"
         }
       ]
     }
