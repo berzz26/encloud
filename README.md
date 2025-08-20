@@ -2,7 +2,7 @@
 
 <div align="center">
   
-![alt text](image-2.png)
+![encloudLogo](./public/image-2.png)
 
 **Securely sync and restore `.env` files across your VS Code projects**
 
