@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as auth from './auth';
-// import { runSetupWizard } from './setupWizard';
 import {
   PasswordSetup,
   EnvFileQuickPickItem,
@@ -13,25 +12,14 @@ import {
   DecryptionError,
 } from './types';
 
-/**
- * URI handler for OAuth callbacks
- */
+// (The URI handler, crypto, and password functions remain the same...)
+
 class EncloudUriHandler implements vscode.UriHandler {
-  /**
-   * Handle the URI callback from OAuth authentication
-   * @param uri The URI containing OAuth tokens
-   */
   async handleUri(uri: vscode.Uri): Promise<void> {
     await auth.handleDeepLink(uri);
   }
 }
 
-/**
- * Derive an encryption key from a password and salt using PBKDF2
- * @param password The user's password
- * @param salt The salt for key derivation
- * @returns Promise resolving to the derived key
- */
 async function deriveKey(password: string, salt: Buffer): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     crypto.pbkdf2(password, salt, 100000, 32, 'sha256', (err, key) => {
@@ -41,12 +29,6 @@ async function deriveKey(password: string, salt: Buffer): Promise<Buffer> {
   });
 }
 
-/**
- * Hash a password with salt using PBKDF2 for verification
- * @param password The user's password
- * @param salt The salt for password hashing
- * @returns Promise resolving to the password hash as a hex string
- */
 async function hashPassword(password: string, salt: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
     crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, key) => {
@@ -56,36 +38,20 @@ async function hashPassword(password: string, salt: Buffer): Promise<string> {
   });
 }
 
-/**
- * Prompt the user to set up a new encryption password
- * @returns Promise resolving to the password setup data
- * @throws Error if the user cancels the password setup
- */
 async function setupPassword(): Promise<PasswordSetup> {
   const password = await vscode.window.showInputBox({
     prompt: 'Set up a password to encrypt your .env files (min. 8 characters)',
     password: true,
     validateInput: (text) => (text.length < 8 ? 'Password must be at least 8 characters' : null),
   });
-
   if (!password) {
     throw new PasswordRequiredError('Password is required for setup');
   }
-
   const salt = crypto.randomBytes(16);
   const verificationHash = await hashPassword(password, salt);
-
-  return {
-    password,
-    salt: salt.toString('hex'),
-    verificationHash,
-  };
+  return { password, salt: salt.toString('hex'), verificationHash };
 }
 
-/**
- * Prompt the user to enter their encryption password
- * @returns Promise resolving to the entered password
- */
 async function requestPassword(): Promise<string | undefined> {
   return vscode.window.showInputBox({
     prompt: 'Enter your password to access .env files',
@@ -93,20 +59,13 @@ async function requestPassword(): Promise<string | undefined> {
   });
 }
 
-/**
- * Get the derived encryption key for a user
- * @param userId The user's ID
- * @param context The extension context
- * @returns Promise resolving to the derived encryption key
- * @throws Error if password validation fails
- */
 async function getDerivedKey(userId: string): Promise<Buffer> {
   try {
     const { data, error } = await auth.supabase
       .from('users')
       .select('salt, verification_hash')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Failed to retrieve user data: ${error.message}`);
@@ -116,38 +75,20 @@ async function getDerivedKey(userId: string): Promise<Buffer> {
     let salt: string;
 
     if (!data?.salt) {
-      // First-time setup
       const setup = await setupPassword();
-
-      const { error: upsertError } = await auth.supabase.from('users').upsert([
-        {
-          user_id: userId,
-          salt: setup.salt,
-          verification_hash: setup.verificationHash,
-        },
-      ]);
-
-      if (upsertError) {
-        throw new Error(`Failed to save user data: ${upsertError.message}`);
-      }
-
+      const { error: upsertError } = await auth.supabase
+        .from('users')
+        .upsert([{ user_id: userId, salt: setup.salt, verification_hash: setup.verificationHash }]);
+      if (upsertError) throw new Error(`Failed to save user data: ${upsertError.message}`);
       password = setup.password;
       salt = setup.salt;
     } else {
-      // Existing user, verify password
       password = await requestPassword();
-      if (!password) {
-        throw new PasswordRequiredError();
-      }
-
+      if (!password) throw new PasswordRequiredError();
       salt = data.salt;
       const hash = await hashPassword(password, Buffer.from(salt, 'hex'));
-
-      if (hash !== data.verification_hash) {
-        throw new InvalidPasswordError();
-      }
+      if (hash !== data.verification_hash) throw new InvalidPasswordError();
     }
-
     return deriveKey(password, Buffer.from(salt, 'hex'));
   } catch (error) {
     if (error instanceof PasswordRequiredError || error instanceof InvalidPasswordError) {
@@ -157,12 +98,6 @@ async function getDerivedKey(userId: string): Promise<Buffer> {
   }
 }
 
-/**
- * Encrypt text with the derived key
- * @param text The text to encrypt
- * @param key The encryption key
- * @returns The encrypted text as a string (IV:encrypted)
- */
 function encrypt(text: string, key: Buffer): string {
   try {
     const iv = crypto.randomBytes(16);
@@ -174,12 +109,6 @@ function encrypt(text: string, key: Buffer): string {
   }
 }
 
-/**
- * Decrypt text with the derived key
- * @param payload The encrypted payload (IV:encrypted)
- * @param key The encryption key
- * @returns The decrypted text
- */
 function decrypt(payload: string, key: Buffer): string {
   try {
     const [ivHex, encryptedHex] = payload.split(':');
@@ -194,8 +123,43 @@ function decrypt(payload: string, key: Buffer): string {
 }
 
 /**
- * Sync .env files to Supabase
- * @param context The extension context
+ * Prompts the user to select or create a project for syncing.
+ * @param userId The ID of the current user.
+ * @returns The selected or newly created project name, or undefined if cancelled.
+ */
+async function selectOrCreateProject(userId: string): Promise<string | undefined> {
+  const { data, error } = await auth.supabase
+    .from('envs')
+    .select('project_name', { count: 'exact', head: false })
+    .eq('user_id', userId);
+
+  if (error) {
+    vscode.window.showErrorMessage(`Failed to fetch projects: ${error.message}`);
+    return undefined;
+  }
+
+  const projects = [...new Set(data.map((p) => p.project_name))];
+  const CREATE_NEW_PROJECT = '[ Create a new project ]';
+  const items = [...projects, CREATE_NEW_PROJECT];
+
+  const selected = await vscode.window.showQuickPick(items, {
+    placeHolder: 'Select a project to sync to, or create a new one',
+  });
+
+  if (!selected) return undefined;
+
+  if (selected === CREATE_NEW_PROJECT) {
+    return await vscode.window.showInputBox({
+      prompt: 'Enter a name for your new project',
+      validateInput: (text) => (text ? null : 'Project name cannot be empty'),
+    });
+  }
+
+  return selected;
+}
+
+/**
+ * Sync .env files to a selected project in Supabase.
  */
 async function syncEnvFiles(): Promise<void> {
   try {
@@ -205,96 +169,74 @@ async function syncEnvFiles(): Promise<void> {
       return;
     }
 
+    const projectName = await selectOrCreateProject(user.id);
+    if (!projectName) return; // User cancelled
+
     const derivedKey = await getDerivedKey(user.id);
     const workspaceFolders = vscode.workspace.workspaceFolders;
-
     if (!workspaceFolders) {
       vscode.window.showErrorMessage('No workspace is open.');
       return;
     }
 
-    // Find all .env files in the workspace
     const envFiles: vscode.Uri[] = [];
     for (const folder of workspaceFolders) {
       const pattern = new vscode.RelativePattern(folder, '**/.env*');
       const files = await vscode.workspace.findFiles(pattern);
       envFiles.push(...files);
     }
-
     if (envFiles.length === 0) {
       vscode.window.showInformationMessage('No .env files found to sync.');
       return;
     }
 
-    // Create quick pick items for selection
     const items: EnvFileQuickPickItem[] = [
-      {
-        label: 'Sync all .env files',
-        description: `(${envFiles.length} files)`,
-        files: envFiles,
-      },
+      { label: 'Sync all .env files', description: `(${envFiles.length} files)`, files: envFiles },
       ...envFiles.map((file) => ({
         label: vscode.workspace.asRelativePath(file),
         description: 'Single file',
         files: [file],
       })),
     ];
-
-    // Show quick pick to select files
     const selected = await vscode.window.showQuickPick(items, {
       placeHolder: 'Select .env files to sync',
-      canPickMany: false,
     });
-
     if (!selected) return;
 
-    // Show progress indicator
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Syncing .env files',
+        title: `Syncing files to project: ${projectName}`,
         cancellable: false,
       },
       async (progress) => {
-        progress.report({ increment: 0 });
-
-        const totalFiles = selected.files.length;
-        let processedFiles = 0;
-
+        const filesToUpsert = [];
         for (const fileUri of selected.files) {
-          try {
-            const content = await vscode.workspace.fs.readFile(fileUri);
-            const filename = path.basename(fileUri.fsPath);
-            const encryptedContent = encrypt(content.toString(), derivedKey);
-
-            const { error } = await auth.supabase.from('envs').upsert([
-              {
-                user_id: user.id,
-                filename,
-                content: encryptedContent,
-              },
-            ]);
-
-            if (error) {
-              throw new Error(`Failed to sync ${filename}: ${error.message}`);
-            }
-
-            processedFiles++;
-            progress.report({
-              increment: 100 / totalFiles,
-              message: `Processed ${processedFiles} of ${totalFiles} files`,
-            });
-          } catch (error) {
-            vscode.window.showErrorMessage(
-              `Failed to sync file ${fileUri.fsPath}: ${(error as Error).message}`
-            );
-          }
+          const content = await vscode.workspace.fs.readFile(fileUri);
+          const encryptedContent = encrypt(content.toString(), derivedKey);
+          const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+          filesToUpsert.push({
+            user_id: user.id,
+            project_name: projectName,
+            relative_path: relativePath,
+            content: encryptedContent,
+          });
         }
+
+        const { error } = await auth.supabase.from('envs').upsert(filesToUpsert, {
+          onConflict: 'user_id, project_name, relative_path',
+        });
+
+        if (error) {
+          throw new Error(`Failed to sync files: ${error.message}`);
+        }
+
+        progress.report({ increment: 100 });
       }
     );
 
     vscode.window.showInformationMessage(
-      `${selected.files.length} .env file(s) synced to Supabase.`
+      `${selected.files.length} file(s) synced to project "${projectName}".`
     );
   } catch (error) {
     if (error instanceof PasswordRequiredError) {
@@ -308,8 +250,7 @@ async function syncEnvFiles(): Promise<void> {
 }
 
 /**
- * Restore .env files from Supabase
- * @param context The extension context
+ * Restore .env files from a selected project in Supabase.
  */
 async function restoreEnvFiles(): Promise<void> {
   try {
@@ -319,70 +260,63 @@ async function restoreEnvFiles(): Promise<void> {
       return;
     }
 
+    const { data: projectsData, error: projectsError } = await auth.supabase
+      .from('envs')
+      .select('project_name')
+      .eq('user_id', user.id);
+
+    if (projectsError) throw new Error(`Failed to fetch projects: ${projectsError.message}`);
+
+    const projects = [...new Set(projectsData.map((p) => p.project_name))];
+    if (projects.length === 0) {
+      vscode.window.showInformationMessage('No projects found in Supabase to restore from.');
+      return;
+    }
+
+    const projectName = await vscode.window.showQuickPick(projects, {
+      placeHolder: 'Select a project to restore files from',
+    });
+    if (!projectName) return;
+
     const derivedKey = await getDerivedKey(user.id);
     const workspaceFolders = vscode.workspace.workspaceFolders;
-
     if (!workspaceFolders) {
       vscode.window.showErrorMessage('No workspace is open.');
       return;
     }
-
     const rootPath = workspaceFolders[0].uri.fsPath;
 
-    // Show progress indicator
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Restoring .env files',
+        title: `Restoring files from project: ${projectName}`,
         cancellable: false,
       },
       async (progress) => {
-        progress.report({ increment: 0 });
+        const { data, error } = await auth.supabase
+          .from('envs')
+          .select('relative_path, content')
+          .eq('user_id', user.id)
+          .eq('project_name', projectName);
 
-        const { data, error } = await auth.supabase.from('envs').select('*').eq('user_id', user.id);
-
-        if (error) {
-          throw new Error(`Failed to fetch .env files: ${error.message}`);
-        }
-
-        if (!data || data.length === 0) {
-          vscode.window.showInformationMessage('No .env files found in Supabase.');
-          return;
-        }
-
-        const totalFiles = data.length;
-        let processedFiles = 0;
+        if (error) throw new Error(`Failed to fetch files: ${error.message}`);
 
         for (const row of data) {
-          try {
-            const decrypted = decrypt(row.content, derivedKey);
+          const decrypted = decrypt(row.content, derivedKey);
+          const targetPath = path.join(rootPath, row.relative_path);
 
-            // Check if the file already exists in the workspace
-            const pattern = new vscode.RelativePattern(workspaceFolders[0], `**/${row.filename}`);
-            const existingFiles = await vscode.workspace.findFiles(pattern);
-
-            const targetPath =
-              existingFiles.length > 0
-                ? existingFiles[0].fsPath
-                : path.join(rootPath, row.filename);
-
-            fs.writeFileSync(targetPath, decrypted, 'utf8');
-
-            processedFiles++;
-            progress.report({
-              increment: 100 / totalFiles,
-              message: `Restored ${processedFiles} of ${totalFiles} files`,
-            });
-          } catch (error) {
-            vscode.window.showErrorMessage(
-              `Failed to restore ${row.filename}: ${(error as Error).message}`
-            );
+          // Ensure directory exists before writing file
+          const dirName = path.dirname(targetPath);
+          if (!fs.existsSync(dirName)) {
+            fs.mkdirSync(dirName, { recursive: true });
           }
+
+          fs.writeFileSync(targetPath, decrypted, 'utf8');
         }
       }
     );
 
-    vscode.window.showInformationMessage(`Environment files restored successfully.`);
+    vscode.window.showInformationMessage(`Files restored from project "${projectName}".`);
   } catch (error) {
     if (error instanceof PasswordRequiredError) {
       vscode.window.showErrorMessage('Password is required to decrypt files.');
@@ -395,8 +329,7 @@ async function restoreEnvFiles(): Promise<void> {
 }
 
 /**
- * Clear all .env data from Supabase
- * @param context The extension context
+ * Clear all .env data from Supabase (now project-specific).
  */
 async function clearEnvData(): Promise<void> {
   try {
@@ -406,32 +339,52 @@ async function clearEnvData(): Promise<void> {
       return;
     }
 
-    const answer = await vscode.window.showWarningMessage(
-      '⚠️ Are you sure you want to clear all .env ? This action cannot be undone.',
-      'Yes, Clear All',
-      'Cancel'
-    );
+    // Fetch and let user select which project to clear
+    const { data: projectsData, error: projectsError } = await auth.supabase
+      .from('envs')
+      .select('project_name')
+      .eq('user_id', user.id);
 
-    if (answer !== 'Yes, Clear All') {
+    if (projectsError) throw new Error(`Failed to fetch projects: ${projectsError.message}`);
+
+    const projects = [...new Set(projectsData.map((p) => p.project_name))];
+    if (projects.length === 0) {
+      vscode.window.showInformationMessage('No projects found to clear.');
       return;
     }
+
+    const projectToClear = await vscode.window.showQuickPick(projects, {
+      placeHolder: 'Select a project to clear all .env files from',
+    });
+    if (!projectToClear) return;
+
+    const answer = await vscode.window.showWarningMessage(
+      `⚠️ Are you sure you want to clear all .env files from project "${projectToClear}"? This action cannot be undone.`,
+      { modal: true },
+      'Yes, Clear All'
+    );
+    if (answer !== 'Yes, Clear All') return;
 
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Clearing .env data',
+        title: `Clearing data for project: ${projectToClear}`,
         cancellable: false,
       },
       async () => {
-        const { error } = await auth.supabase.from('envs').delete().eq('user_id', user.id);
+        const { error } = await auth.supabase
+          .from('envs')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('project_name', projectToClear);
 
-        if (error) {
-          throw new Error(`Failed to clear .env data: ${error.message}`);
-        }
+        if (error) throw new Error(`Failed to clear data: ${error.message}`);
       }
     );
 
-    vscode.window.showInformationMessage('All .env files have been cleared from Supabase.');
+    vscode.window.showInformationMessage(
+      `All .env files for project "${projectToClear}" have been cleared.`
+    );
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to clear data: ${(error as Error).message}`);
   }
@@ -443,14 +396,11 @@ async function clearEnvData(): Promise<void> {
  */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   try {
-    // Initialize authentication state
     auth.initializeState(context);
     await auth.restoreSession();
 
-    // Register URI handler for OAuth callbacks
     context.subscriptions.push(vscode.window.registerUriHandler(new EncloudUriHandler()));
 
-    // Register commands
     context.subscriptions.push(
       vscode.commands.registerCommand('encloud.login', async () => {
         try {
@@ -459,7 +409,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           vscode.window.showErrorMessage(`Login failed: ${(error as Error).message}`);
         }
       }),
-
       vscode.commands.registerCommand('encloud.logout', async () => {
         try {
           await auth.logout();
@@ -467,22 +416,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           vscode.window.showErrorMessage(`Logout failed: ${(error as Error).message}`);
         }
       }),
-
-      vscode.commands.registerCommand('encloud.sync', async () => {
-        await syncEnvFiles();
-      }),
-
-      vscode.commands.registerCommand('encloud.restore', async () => {
-        await restoreEnvFiles();
-      }),
-
-      vscode.commands.registerCommand('encloud.clear', async () => {
-        await clearEnvData();
-      })
+      vscode.commands.registerCommand('encloud.sync', syncEnvFiles),
+      vscode.commands.registerCommand('encloud.restore', restoreEnvFiles),
+      vscode.commands.registerCommand('encloud.clear', clearEnvData)
     );
-
-    // Temporarily disabled for local testing
-    // await runSetupWizard(context);
   } catch (error) {
     vscode.window.showErrorMessage(`Extension activation failed: ${(error as Error).message}`);
   }
@@ -491,6 +428,4 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 /**
  * Deactivate the extension
  */
-export function deactivate(): void {
-  // Nothing to clean up
-}
+export function deactivate(): void {}
