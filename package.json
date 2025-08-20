@@ -11,6 +11,7 @@
   "categories": [
     "Other"
   ],
+  "icon": "icon.png",
   "activationEvents": [
     "onCommand:encloud.login",
     "onCommand:encloud.sync",

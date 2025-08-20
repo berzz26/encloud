@@ -5,7 +5,8 @@ node_modules
 dist/
 .vscode-test/
 *.vsix
-
+*.png
+*.jpg
 # Environment variables
 .env.local
 .env

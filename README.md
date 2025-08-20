@@ -2,7 +2,7 @@
 
 <div align="center">
   
-![Encloud Logo](https://via.placeholder.com/150x150.png?text=Encloud)
+![alt text](image-2.png)
 
 **Securely sync and restore `.env` files across your VS Code projects**
 
@@ -23,14 +23,14 @@ Encloud allows developers to securely encrypt and store `.env` files in Supabase
 *GitHub authentication flow*
 
 ![Sync Files](https://via.placeholder.com/800x450.png?text=Sync+Files)
-*Selecting .env files to sync*
+_Selecting .env files to sync_
 
 ![Restore Files](https://via.placeholder.com/800x450.png?text=Restore+Files)
-*Restoring encrypted .env files*
+_Restoring encrypted .env files_
 
 </div>
 
-## ✨ Features
+## Features
 
 - Detects `.env*` files in your workspace
 - Password-based encryption (PBKDF2 + AES-256-CBC)
@@ -58,11 +58,13 @@ Encloud allows developers to securely encrypt and store `.env` files in Supabase
 ### Basic Usage
 
 1. **Syncing .env Files**:
+
    - Open the Command Palette
    - Run "Encloud: Sync .env Files"
    - Select files to encrypt and sync
 
 2. **Restoring .env Files**:
+
    - Open the Command Palette
    - Run "Encloud: Restore .env Files"
    - Enter your password to decrypt files
@@ -93,22 +95,26 @@ Encloud allows developers to securely encrypt and store `.env` files in Supabase
 This project uses [pnpm](https://pnpm.io/) as its package manager for faster and more efficient dependency management.
 
 1. Install pnpm if you haven't already:
+
    ```bash
    npm install -g pnpm
    ```
 
 2. Clone the repository:
+
    ```bash
    git clone https://github.com/berzz26/encloud.git
    cd encloud
    ```
 
 3. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 4. Create a `.env` file with your Supabase credentials:
+
    ```
    SUPABASE_URL=your_supabase_url
    SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -132,16 +138,19 @@ This will create a `.vsix` file that can be installed manually in VS Code.
 ### Common Issues
 
 1. **Login Fails**
+
    - Ensure you have a stable internet connection
    - Check if GitHub authentication services are operational
    - Try clearing browser cookies and cache
 
 2. **Cannot Sync Files**
+
    - Verify that your workspace contains `.env` files
    - Ensure you're logged in (run "Encloud: Login" first)
    - Check if you have write permissions to the workspace
 
 3. **Password Not Working**
+
    - Passwords are case-sensitive
    - Ensure you're using the same password that was set during initial setup
    - There is no password recovery - if lost, you'll need to clear data and start fresh
