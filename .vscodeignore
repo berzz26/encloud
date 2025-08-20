@@ -1,10 +1,23 @@
-.vscode/**
-.vscode-test/**
-test/**
+# Ignore the source TypeScript files, we only want the compiled output
+src/
+scripts/
+
+# Ignore development tools and configs
+node_modules/
+.vscode/
+test/
+.github/
+.husky/
+
+# Ignore config files not needed at runtime
+.prettierrc
+.eslintrc.js
+tsconfig.json
+pnpm-lock.yaml
+.npmrc
+jsconfig.json
 .gitignore
-.yarnrc
-vsc-extension-quickstart.md
-**/jsconfig.json
-**/*.map
-**/eslint.config.mjs
-**/.vscode-test.*
+
+# Ignore documentation and the generated package file
+
+*.vsix

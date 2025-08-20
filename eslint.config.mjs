@@ -1,4 +1,6 @@
 import globals from "globals";
+import tseslint from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
 
 export default [
   {
@@ -8,11 +10,15 @@ export default [
         ...globals.node,
         ...globals.mocha,
       },
+      parser: tsParser,
       parserOptions: {
         project: "./tsconfig.json",
         ecmaVersion: 2022,
         sourceType: "module",
       },
+    },
+    plugins: {
+      "@typescript-eslint": tseslint,
     },
     rules: {
       "@typescript-eslint/explicit-function-return-type": "warn",

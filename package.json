@@ -2,7 +2,7 @@
   "name": "encloud",
   "displayName": "Encloud",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.5.0",
+  "version": "0.1.0",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",
@@ -12,70 +12,69 @@
     "Other"
   ],
   "activationEvents": [
-    "onUriHandler",
-    "onStartupFinished",
     "onCommand:encloud.login",
-    "onCommand:supabase-github.logout",
     "onCommand:encloud.sync",
     "onCommand:encloud.restore",
-    "onCommand:encloud.clear"
+    "onCommand:encloud.clear",
+    "onCommand:encloud.logout",
+    "onUriHandler"
   ],
-  "main": "./dist/src/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "authentication": [
       {
-        "id": "supabase-github",
+        "id": "encloud",
         "label": "Supabase (GitHub)"
       }
     ],
     "commands": [
       {
-        "command": "supabase-github.logout",
+        "command": "encloud.logout",
         "title": " Logout",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.login",
         "title": " Login",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.sync",
         "title": " Sync .env Files",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.restore",
         "title": " Restore .env Files",
-        "category": "Encloud"
+        "category": "encloud"
       },
       {
         "command": "encloud.clear",
         "title": " Clear .env Data",
-        "category": "Encloud"
+        "category": "encloud"
       }
     ],
     "menus": {
       "commandPalette": [
         {
           "command": "encloud.login",
-          "group": "Encloud"
+          "group": "encloud"
         },
         {
-          "command": "supabase-github.logout",
-          "group": "Encloud"
+          "command": "encloud.logout",
+          "group": "encloud"
         },
         {
           "command": "encloud.sync",
-          "group": "Encloud"
+          "group": "encloud"
         },
         {
           "command": "encloud.restore",
-          "group": "Encloud"
+          "group": "encloud"
         },
         {
           "command": "encloud.clear",
-          "group": "Encloud"
+          "group": "encloud"
         }
       ]
     }
@@ -84,8 +83,8 @@
     "lint": "eslint .",
     "test:vscode": "vscode-test",
     "test": "mocha -r ts-node/register src/test/**/*.ts",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "node ./scripts/build.js",
+    "watch": "node ./build.js --watch",
     "build": "pnpm run compile",
     "package": "vsce package --no-dependencies",
     "publish": "vsce publish --no-dependencies",
