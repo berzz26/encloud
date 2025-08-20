@@ -2,7 +2,7 @@
   "name": "encloud",
   "displayName": "Encloud",
   "description": "keep track of your env files across multiple workspaces and different environments!",
-  "version": "0.4.3",
+  "version": "0.1.0",
   "publisher": "AumTamboli",
   "engines": {
     "vscode": "^1.99.0",
@@ -19,7 +19,7 @@
     "onCommand:encloud.logout",
     "onUriHandler"
   ],
-  "main": "./dist/src/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "authentication": [
       {
@@ -83,8 +83,8 @@
     "lint": "eslint .",
     "test:vscode": "vscode-test",
     "test": "mocha -r ts-node/register src/test/**/*.ts",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "node ./scripts/build.js",
+    "watch": "node ./build.js --watch",
     "build": "pnpm run compile",
     "package": "vsce package --no-dependencies",
     "publish": "vsce publish",
